@@ -1,0 +1,2 @@
+#!/bin/bash
+supervisor node app.js
