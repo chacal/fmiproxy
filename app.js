@@ -2,7 +2,8 @@ var express = require('express')
 var Promise = require('bluebird')
 var APIKey = require('./apikey')
 var geocode = require('./server/reverse_geocode.js')
-var gribParser = require('./server/grib_get_parser')
+var gribParser = require('./server/grib_get_parser.js')
+var observations = require('./server/observations.js')(APIKey.key)
 
 var HIRLAM_GRIB_FILE = 'hirlam_20150827-063947.grb'
 
@@ -19,6 +20,12 @@ function startServer() {
   app.get("/hirlam-forecast", function(req, res, next) {
     gribParser.getForecastFromGrib(HIRLAM_GRIB_FILE, req.query.lat, req.query.lon)
       .then(function(forecast) { res.json(forecast).end() })
+      .catch(next)
+  })
+
+  app.get("/observations", function(req, res, next) {
+    observations.getObservationsForGeoid(req.query.geoid)
+      .then(function(observations) { res.json(observations).end() })
       .catch(next)
   })
 
