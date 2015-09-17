@@ -24,9 +24,19 @@ function startServer() {
   })
 
   app.get("/observations", function(req, res, next) {
-    observations.getObservationsForGeoid(req.query.geoid)
-      .then(function(observations) { res.json(observations).end() })
-      .catch(next)
+    if(req.query.geoid && req.query.place) {
+      res.status(400).json({message: 'Use either geiod or place, not both!'}).end()
+    } else if(req.query.geoid) {
+      observations.getObservationsForGeoid(req.query.geoid)
+        .then(function(observations) { res.json(observations).end() })
+        .catch(next)
+    } else if(req.query.place) {
+      observations.getObservationsForPlace(req.query.place)
+        .then(function(observations) { res.json(observations).end() })
+        .catch(next)
+    } else {
+      res.status(400).json({message: 'Either geiod or place must be given!'}).end()
+    }
   })
 
   app.listen(app.get('port'), function() {
