@@ -1,8 +1,8 @@
 var express = require('express')
-var geocode = require('./reverse_geocode.js')
 var Promise = require('bluebird')
 var APIKey = require('./apikey')
-var gribParser = require('./grib_get_parser')
+var geocode = require('./server/reverse_geocode.js')
+var gribParser = require('./server/grib_get_parser')
 
 var HIRLAM_GRIB_FILE = 'hirlam_20150827-063947.grb'
 
