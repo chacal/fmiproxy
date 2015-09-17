@@ -2,6 +2,9 @@ var express = require('express')
 var geocode = require('./reverse_geocode.js')
 var Promise = require('bluebird')
 var APIKey = require('./apikey')
+var gribParser = require('./grib_get_parser')
+
+var HIRLAM_GRIB_FILE = 'hirlam_20150827-063947.grb'
 
 var app = express()
 app.set('port', (process.env.PORT || 8000))
@@ -13,7 +16,22 @@ function startServer() {
     res.json(geocode.getNearestStation(req.query.lat, req.query.lon)).end()
   })
 
+  app.get("/hirlam-forecast", function(req, res, next) {
+    gribParser.getForecastFromGrib(HIRLAM_GRIB_FILE, req.query.lat, req.query.lon)
+      .then(function(forecast) { res.json(forecast).end() })
+      .catch(next)
+  })
+
   app.listen(app.get('port'), function() {
     console.log("FMI proxy is running at localhost:" + app.get('port'))
+  })
+
+  app.use(function (err, req, res, next) {
+    console.log(err)
+    res.status(err.status || 500)
+    res.json({
+      message: err.message,
+      error: err
+    })
   })
 }
