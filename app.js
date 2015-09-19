@@ -1,16 +1,16 @@
 var express = require('express')
 var Promise = require('bluebird')
-var APIKey = require('./apikey')
+var FMIAPIKey = process.env.FMI_API_KEY || require('./apikey').key
 var geocode = require('./server/reverse_geocode.js')
 var gribParser = require('./server/grib_get_parser.js')
-var observations = require('./server/observations.js')(APIKey.key)
+var observations = require('./server/observations.js')(FMIAPIKey)
 
 var HIRLAM_GRIB_FILE = 'hirlam_20150827-063947.grb'
 
 var app = express()
 app.set('port', (process.env.PORT || 8000))
 
-geocode.init(APIKey.key).then(startServer)
+geocode.init(FMIAPIKey).then(startServer)
 
 function startServer() {
   app.get("/nearest-station", function(req, res, next) {
