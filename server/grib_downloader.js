@@ -59,7 +59,7 @@ function init(apiKey) {
       .spread(function(res, gribFileBuffer) {
         if(gribFileBuffer.length === 0) {
           console.log("WARN: Got empty response when downloading grib. Retrying..")
-          return downloadLatestGrib()
+          return Promise.delay(5000).then(downloadLatestGrib)
         } else {
           return fs.writeFileAsync(latestGrib + '.tmp', gribFileBuffer)
             .then(function() {
