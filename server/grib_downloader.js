@@ -85,5 +85,6 @@ function init(apiKey) {
 
 
 module.exports = {
-  init: init
+  init: init,
+  gribFile: latestGrib
 }

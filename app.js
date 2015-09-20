@@ -6,8 +6,6 @@ var gribParser = require('./server/grib_get_parser.js')
 var observations = require('./server/observations.js')(FMIAPIKey)
 var gribDownloader = require('./server/grib_downloader')
 
-var HIRLAM_GRIB_FILE = 'hirlam_20150827-063947.grb'
-
 var app = express()
 app.set('port', (process.env.PORT || 8000))
 
@@ -24,7 +22,7 @@ function startServer() {
   })
 
   app.get("/hirlam-forecast", function(req, res, next) {
-    gribParser.getForecastFromGrib(HIRLAM_GRIB_FILE, req.query.lat, req.query.lon)
+    gribParser.getForecastFromGrib(gribDownloader.gribFile, req.query.lat, req.query.lon)
       .then(function(forecast) { res.json(forecast).end() })
       .catch(next)
   })
