@@ -4,8 +4,8 @@ var request = Promise.promisifyAll(require('request'))
 var xml2js = Promise.promisifyAll(require('xml2js'))
 var mkdirp = Promise.promisify(require('mkdirp'));
 var _ = require('lodash')
-var child_process = require('child_process')
 var moment = require('moment')
+var utils = require('./utils')
 
 var gribDir = __dirname + '/../gribs'
 var latestGrib = gribDir + '/latest.grb'
@@ -30,22 +30,7 @@ function init(apiKey) {
   function getLatestDownloadedGribTimestamp() {
     return fs.statAsync(latestGrib)
       .then(function() {
-        return new Promise(function (resolve, reject) {
-          var grib_get = child_process.spawn('grib_get', ['-p', 'dataDate,dataTime', latestGrib])
-          var output = ""
-          var errorOutput = ""
-
-          grib_get.on('error', function(err) { reject(err) })
-          grib_get.on('exit', function(code) {
-            if(code === 0) {
-              resolve(output)
-            } else {
-              reject({message: 'grib_get exited with error ' + code + ':\n' + errorOutput})
-            }
-          })
-          grib_get.stderr.on('data', function(chunk) { errorOutput = errorOutput + chunk })
-          grib_get.stdout.on('data', function(chunk) { output = output + chunk })
-        })
+        return utils.grib_get(['-p', 'dataDate,dataTime', latestGrib])
       })
       .then(function(output) {
         var parts = output.split(/\n/)[0].split(/ /)
@@ -53,7 +38,7 @@ function init(apiKey) {
         var dataTime = parts[1]
         return moment(dataDate + dataTime + '+0000', 'YYYYMMDDHHmmZ').toDate()
       })
-      .catch(function(err) {
+      .catch(function() {
         return undefined
       })
   }

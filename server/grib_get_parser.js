@@ -3,27 +3,12 @@ var fs = Promise.promisifyAll(require('fs'))
 var _ = require('lodash')
 var Victor = require('victor')
 var moment = require('moment')
-var child_process = require('child_process')
+var utils = require('./utils')
 
 
 function getForecastFromGrib(gribPath, latitude, longitude) {
-  return new Promise(function (resolve, reject) {
-    var grib_get = child_process.spawn('grib_get', ['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
-    var output = ""
-    var errorOutput = ""
-
-    grib_get.on('error', function(err) { reject(err) })
-    grib_get.on('exit', function(code) {
-      if(code === 0) {
-        resolve(output)
-      } else {
-        reject({message: 'grib_get exited with error ' + code + ':\n' + errorOutput})
-      }
-    })
-    grib_get.stderr.on('data', function(chunk) { errorOutput = errorOutput + chunk })
-    grib_get.stdout.on('data', function(chunk) { output = output + chunk })
-  })
-  .then(parseForecast)
+  return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
+    .then(parseForecast)
 }
 
 
