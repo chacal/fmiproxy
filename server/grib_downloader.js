@@ -57,10 +57,15 @@ function init(apiKey) {
     console.log("Downloading latest HIRLAM grib...")
     return request.getAsync(gribUrl, { encoding: null })
       .spread(function(res, gribFileBuffer) {
-        return fs.writeFileAsync(latestGrib + '.tmp', gribFileBuffer)
-      })
-      .then(function() {
-        return fs.renameAsync(latestGrib + '.tmp', latestGrib)
+        if(gribFileBuffer.length === 0) {
+          console.log("WARN: Got empty response when downloading grib. Retrying..")
+          return downloadLatestGrib()
+        } else {
+          return fs.writeFileAsync(latestGrib + '.tmp', gribFileBuffer)
+            .then(function() {
+              return fs.renameAsync(latestGrib + '.tmp', latestGrib)
+            })
+        }
       })
   }
 }
