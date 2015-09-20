@@ -1,5 +1,4 @@
 var Promise = require('bluebird')
-var fs = Promise.promisifyAll(require('fs'))
 var request = Promise.promisifyAll(require('request'))
 var xml2js = Promise.promisifyAll(require('xml2js'))
 var child_process = require('child_process')
@@ -24,7 +23,15 @@ function grib_get(params) {
   })
 }
 
+function getFmiXMLasJson(url) {
+  return request.getAsync(url)
+    .spread(function(res, body) {
+      return xml2js.parseStringAsync(body)
+    })
+}
+
 
 module.exports = {
-  grib_get: grib_get
+  grib_get: grib_get,
+  getFmiXMLasJson: getFmiXMLasJson
 }

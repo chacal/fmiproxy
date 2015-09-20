@@ -4,6 +4,7 @@ var xml2js = Promise.promisifyAll(require('xml2js'))
 var _ = require('lodash')
 var geolib = require('geolib')
 var moment = require('moment')
+var utils = require('./utils')
 
 var observationStations = []
 
@@ -12,10 +13,7 @@ function init(apiKey) {
   var lastFullHour = moment().minutes(0).seconds(0).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"
   var observationsUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
 
-  return request.getAsync(observationsUrl)
-    .spread(function(res, body) {
-      return xml2js.parseStringAsync(body)
-    })
+  return utils.getFmiXMLasJson(observationsUrl)
     .then(function(json) {
       var observations = json['wfs:FeatureCollection']['wfs:member']
       return _.map(observations, function(observation) {

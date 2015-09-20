@@ -45,10 +45,7 @@ function init(apiKey) {
 
   function getLatestPublishedGribTimestamp() {
     var gribMetadataUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
-    return request.getAsync(gribMetadataUrl)
-      .spread(function(res, body) {
-        return xml2js.parseStringAsync(body)
-      })
+    return utils.getFmiXMLasJson(gribMetadataUrl)
       .then(function(json) {
         var latestGribMetadata = _.last(_.get(json, 'wfs:FeatureCollection.wfs:member'))
         return new Date(_.get(latestGribMetadata, 'omso:GridSeriesObservation[0].om:resultTime[0].gml:TimeInstant[0].gml:timePosition[0]'))
