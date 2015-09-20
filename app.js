@@ -11,10 +11,14 @@ var HIRLAM_GRIB_FILE = 'hirlam_20150827-063947.grb'
 var app = express()
 app.set('port', (process.env.PORT || 8000))
 
+console.log("Starting fmiproxy..")
+
 Promise.join(geocode.init(FMIAPIKey), gribDownloader.init(FMIAPIKey))
   .then(startServer)
 
 function startServer() {
+  console.log("Starting HTTP server..")
+
   app.get("/nearest-station", function(req, res, next) {
     res.json(geocode.getNearestStation(req.query.lat, req.query.lon)).end()
   })
