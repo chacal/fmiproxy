@@ -9,15 +9,28 @@ var utils = require('./utils')
 
 var gribDir = __dirname + '/../gribs'
 var latestGrib = gribDir + '/latest.grb'
+var gribUpdateCheckIntervalMillis = 10 * 60 * 1000
 
 function init(apiKey) {
-  console.log("Updating HIRLAM grib..")
+  console.log("Initializing grib downloader.")
 
   return mkdirp(gribDir)
+    .then(updateGribIfNeeded)
     .then(function() {
-      return Promise.join(getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp(), function(downloadedTime, publishedTime) {
-        return moment(downloadedTime).diff(moment(publishedTime)) === 0
-      })
+      scheduleGribUpdates() // Intentionally no 'return' here to launch the grib updates to the background
+    })
+
+  function scheduleGribUpdates() {
+    return Promise.delay(gribUpdateCheckIntervalMillis)
+      .then(updateGribIfNeeded)
+      .then(scheduleGribUpdates)
+      .catch(scheduleGribUpdates)
+  }
+
+  function updateGribIfNeeded() {
+    console.log('Checking for new grib..')
+    return Promise.join(getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp(), function(downloadedTime, publishedTime) {
+      return moment(downloadedTime).diff(moment(publishedTime)) === 0
     })
     .then(function(downloadedGribUpToDate) {
       if(! downloadedGribUpToDate) {
@@ -26,6 +39,7 @@ function init(apiKey) {
         console.log("Downloaded HIRLAM grib is already up-to-date.")
       }
     })
+  }
 
   function getLatestDownloadedGribTimestamp() {
     return fs.statAsync(latestGrib)
@@ -54,7 +68,7 @@ function init(apiKey) {
 
   function downloadLatestGrib() {
     var gribUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.6,25.8,60.6&projection=EPSG:4326'
-    console.log("Downloading latest HIRLAM grib...")
+    console.log("Downloading latest HIRLAM grib..")
     return request.getAsync(gribUrl, { encoding: null })
       .spread(function(res, gribFileBuffer) {
         if(gribFileBuffer.length === 0) {
