@@ -65,6 +65,7 @@ function init(apiKey) {
             .then(function() {
               return fs.renameAsync(latestGrib + '.tmp', latestGrib)
             })
+            .then(function() { console.log('Successfully downloaded new grib file! (' + gribFileBuffer.length + ' bytes)') })
         }
       })
   }
