@@ -34,7 +34,7 @@ function init(apiKey) {
 
 function getNearestStation(latitude, longitude) {
   var nearest = geolib.findNearest({latitude: latitude, longitude: longitude}, observationStations)
-  return observationStations[nearest.key]
+  return _.extend({ distanceMeters: nearest.distance }, observationStations[nearest.key])
 }
 
 module.exports = {
