@@ -2,6 +2,7 @@ var Promise = require('bluebird')
 var request = Promise.promisifyAll(require('request'))
 var xml2js = Promise.promisifyAll(require('xml2js'))
 var child_process = require('child_process')
+var _ = require('lodash')
 
 
 function grib_get(params) {
@@ -30,8 +31,24 @@ function getFmiXMLasJson(url) {
     })
 }
 
+function getStationInfoFromGmlPoint(gmlPoint) {
+  var name = gmlPoint['gml:name'][0]
+  var location = gmlPoint['gml:pos'][0].trim()
+  var latitude = location.substr(0, location.indexOf(' '))
+  var longitude = location.substr(location.indexOf(' ') + 1)
+  return {name: name, latitude: parseFloat(latitude), longitude: parseFloat(longitude)}
+}
+
+function getGeoidFromGridSeriesObservation(gridSeriesObservation) {
+  var pathStart = 'om:featureOfInterest[0].sams:SF_SpatialSamplingFeature[0]'
+  var gmlNames = _.get(gridSeriesObservation, pathStart + '.sam:sampledFeature[0].target:LocationCollection[0].target:member[0].target:Location[0].gml:name')
+  return _.find(gmlNames, function(name) { return _.get(name, '$.codeSpace') === 'http://xml.fmi.fi/namespace/locationcode/geoid' })._
+}
+
 
 module.exports = {
   grib_get: grib_get,
-  getFmiXMLasJson: getFmiXMLasJson
+  getFmiXMLasJson: getFmiXMLasJson,
+  getStationInfoFromGmlPoint: getStationInfoFromGmlPoint,
+  getGeoidFromGridSeriesObservation: getGeoidFromGridSeriesObservation
 }

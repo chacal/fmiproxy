@@ -23,14 +23,20 @@ module.exports = function(apiKey) {
   }
 
   function parseObservationsResponse(json) {
-    var pathStart = 'wfs:FeatureCollection.wfs:member[0].omso:GridSeriesObservation[0].om:result[0].gmlcov:MultiPointCoverage[0]'
-    var values = _.get(json, pathStart + '.gml:rangeSet[0].gml:DataBlock[0].gml:doubleOrNilReasonTupleList[0]')
-    var metadata = _.get(json, pathStart + 'gml:domainSet[0].gmlcov:SimpleMultiPoint[0].gmlcov:positions[0]')
+    var gridSeriesObservation = _.get(json, 'wfs:FeatureCollection.wfs:member[0].omso:GridSeriesObservation[0]')
+    var geoid = utils.getGeoidFromGridSeriesObservation(gridSeriesObservation)
+
+    var gmlPoint = _.get(gridSeriesObservation, 'om:featureOfInterest[0].sams:SF_SpatialSamplingFeature[0].sams:shape[0].gml:MultiPoint[0].gml:pointMember[0].gml:Point[0]')
+    var stationInfo = utils.getStationInfoFromGmlPoint(gmlPoint)
+
+    var pathStart = 'om:result[0].gmlcov:MultiPointCoverage[0]'
+    var values = _.get(gridSeriesObservation, pathStart + '.gml:rangeSet[0].gml:DataBlock[0].gml:doubleOrNilReasonTupleList[0]')
+    var metadata = _.get(gridSeriesObservation, pathStart + 'gml:domainSet[0].gmlcov:SimpleMultiPoint[0].gmlcov:positions[0]')
     var dataLines = _.map(values.trim().split(/\n/), function(line) { return line.trim() })
     var metadataLines = _.map(metadata.trim().split(/\n/), function(line) { return line.trim() })
     var observationData = _.zipWith(dataLines, metadataLines, function(data, metadata) { return data + ' ' + metadata })
 
-    return _.map(observationData, function(observationLine) {
+    var observations = _.map(observationData, function(observationLine) {
       var parts = _.filter(observationLine.split(/ /), function(line) { return line.trim() !== '' })
       return {
         temperature: parseFloat(parts[0]),
@@ -41,5 +47,7 @@ module.exports = function(apiKey) {
         time: new Date(parseInt(parts[7]) * 1000)
       }
     })
+
+    return _.extend({ geoid: geoid }, stationInfo, { observations: observations })
   }
 }

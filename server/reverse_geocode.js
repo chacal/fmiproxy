@@ -17,13 +17,9 @@ function init(apiKey) {
     .then(function(json) {
       var observations = json['wfs:FeatureCollection']['wfs:member']
       return _.map(observations, function(observation) {
+        var geoid = utils.getGeoidFromGridSeriesObservation(observation['omso:GridSeriesObservation'][0])
         var gmlPoint = _.get(observation, 'omso:GridSeriesObservation[0].om:featureOfInterest[0].sams:SF_SpatialSamplingFeature[0].sams:shape[0].gml:MultiPoint[0].gml:pointMembers[0].gml:Point[0]')
-        var name = gmlPoint['gml:name'][0]
-        var geoid = gmlPoint['$']['gml:id'].substring(6)
-        var location = gmlPoint['gml:pos'][0].trim()
-        var latitude = location.substr(0, location.indexOf(' '))
-        var longitude = location.substr(location.indexOf(' ') + 1)
-        return {name: name, geoid: geoid, latitude: parseFloat(latitude), longitude: parseFloat(longitude)}
+        return _.extend({ geoid: geoid }, utils.getStationInfoFromGmlPoint(gmlPoint))
       })
     })
     .then(function(stations) {
