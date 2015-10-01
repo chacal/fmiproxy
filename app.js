@@ -1,4 +1,5 @@
 var express = require('express')
+var cors = require('cors')
 var Promise = require('bluebird')
 var FMIAPIKey = process.env.FMI_API_KEY || require('./apikey').key
 var geocode = require('./server/reverse_geocode.js')
@@ -8,6 +9,7 @@ var gribDownloader = require('./server/grib_downloader')
 
 var app = express()
 app.set('port', (process.env.PORT || 8000))
+app.use(cors())
 
 console.log("Starting fmiproxy..")
 
