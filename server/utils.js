@@ -12,7 +12,7 @@ function grib_get(params) {
     var errorOutput = ""
 
     grib_get.on('error', function(err) { reject(err) })
-    grib_get.on('exit', function(code) {
+    grib_get.on('close', function(code) {
       if(code === 0) {
         resolve(output)
       } else {
