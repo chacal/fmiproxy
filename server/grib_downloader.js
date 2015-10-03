@@ -6,6 +6,7 @@ var mkdirp = Promise.promisify(require('mkdirp'));
 var _ = require('lodash')
 var moment = require('moment')
 var utils = require('./utils')
+var gribCache = require('./grib_forecast_cache')
 
 var gribDir = __dirname + '/../gribs'
 var latestGrib = gribDir + '/latest.grb'
@@ -16,6 +17,7 @@ function init(apiKey) {
 
   return mkdirp(gribDir)
     .then(updateGribIfNeeded)
+    .then(function(gribUpdated) { if(!gribUpdated) gribCache.refreshFrom(latestGrib) })  // No new grib downloaded -> need to refresh cache manually
     .then(function() {
       scheduleGribUpdates() // Intentionally no 'return' here to launch the grib updates to the background
     })
@@ -35,8 +37,10 @@ function init(apiKey) {
     .then(function(downloadedGribUpToDate) {
       if(! downloadedGribUpToDate) {
         return downloadLatestGrib()
+          .then(function() { return true })
       } else {
         console.log("Downloaded HIRLAM grib is already up-to-date.")
+        return false
       }
     })
   }
@@ -80,6 +84,7 @@ function init(apiKey) {
               return fs.renameAsync(latestGrib + '.tmp', latestGrib)
             })
             .then(function() { console.log('Successfully downloaded new grib file! (' + gribFileBuffer.length + ' bytes)') })
+            .then(function() { gribCache.refreshFrom(latestGrib) })
         }
       })
   }
