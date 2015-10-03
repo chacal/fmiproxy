@@ -71,7 +71,7 @@ function init(apiKey) {
   }
 
   function downloadLatestGrib() {
-    var gribUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.6,25.8,60.6&projection=EPSG:4326'
+    var gribUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
     console.log("Downloading latest HIRLAM grib..")
     return request.getAsync(gribUrl, { encoding: null })
       .spread(function(res, gribFileBuffer) {
