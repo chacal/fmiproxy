@@ -1,5 +1,6 @@
 var express = require('express')
 var cors = require('cors')
+var compression = require('compression')
 var Promise = require('bluebird')
 var _ = require('lodash')
 var FMIAPIKey = process.env.FMI_API_KEY || require('./apikey').key
@@ -12,6 +13,7 @@ var forecastCache = require('./server/grib_forecast_cache')
 var app = express()
 app.set('port', (process.env.PORT || 8000))
 app.use(cors())
+app.use(compression())
 
 console.log("Starting fmiproxy..")
 
