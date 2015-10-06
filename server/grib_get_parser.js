@@ -29,7 +29,7 @@ function parseForecast(gribGetOutput) {
   lines.forEach(function(line) {
     var parts = _.filter(line.split(/ /), function(line) { return line.trim() !== '' })
     forecastDate = parts[1]
-    forecastTime = parts[2]
+    forecastTime = parts[2].length == 3 ? "0" + parts[2] : parts[2]
     var forecastHour = parts[3]
     var datumName = parts[0]
     var datumValue = parseFloat(parts[4])
