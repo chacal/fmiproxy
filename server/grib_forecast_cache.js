@@ -3,6 +3,7 @@ var _ = require('lodash')
 var Promise = require('bluebird')
 var gribParser = require('./grib_get_parser')
 var geolib = require('geolib')
+var moment = require('moment')
 
 
 var CPU_COUNT = require('os').cpus().length
@@ -11,16 +12,22 @@ var LNG_GRID_INCREMENT = 0.5
 var cachedForecasts = []
 
 
-function getForecasts(bounds) {
+function getForecasts(bounds, startTime) {
+  var startTime = moment(startTime || 0)
   var corners = [
     {latitude: bounds.swCorner.lat, longitude: bounds.swCorner.lng},
     {latitude: bounds.neCorner.lat, longitude: bounds.swCorner.lng},
     {latitude: bounds.neCorner.lat, longitude: bounds.neCorner.lng},
     {latitude: bounds.swCorner.lat, longitude: bounds.neCorner.lng}
   ]
-  return _.filter(cachedForecasts, function(forecast) {
+  var forecastsInBounds = _.filter(cachedForecasts, function(forecast) {
     return geolib.isPointInside({ latitude: forecast.lat, longitude: forecast.lng }, corners)
   })
+  var filteredByTime = _.map(forecastsInBounds, function(forecast) {
+    forecast.forecasts = _.filter(forecast.forecasts, function(item) { return moment(item.time).isAfter(startTime) })
+    return forecast
+  })
+  return filteredByTime
 }
 
 function refreshFrom(gribFile) {

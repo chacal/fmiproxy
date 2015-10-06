@@ -33,12 +33,12 @@ function startServer() {
     } else if(req.query.bounds) {
       try {
         var coords = _.map(req.query.bounds.trim().split(','), parseFloat)
-        res.json(forecastCache.getForecasts({ swCorner: { lat: coords[0], lng: coords[1] }, neCorner: { lat: coords[2], lng: coords[3] } }))
+        res.json(forecastCache.getForecasts({ swCorner: { lat: coords[0], lng: coords[1] }, neCorner: { lat: coords[2], lng: coords[3] } }, req.query.startTime))
       } catch (e) {
         next(e)
       }
     } else if(req.query.lat && req.query.lon) {
-      gribParser.getForecastFromGrib(gribDownloader.gribFile, req.query.lat, req.query.lon)
+      gribParser.getForecastFromGrib(gribDownloader.gribFile, req.query.lat, req.query.lon, req.query.startTime)
         .then(function(forecast) { res.json(forecast).end() })
         .catch(next)
     } else {

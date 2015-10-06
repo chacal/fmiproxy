@@ -6,9 +6,15 @@ var moment = require('moment')
 var utils = require('./utils')
 
 
-function getForecastFromGrib(gribPath, latitude, longitude) {
+function getForecastFromGrib(gribPath, latitude, longitude, startTime) {
+  var startTime = moment(startTime || 0)
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
     .then(parseForecast)
+    .then(getForecastItemsAfterStartTime)
+
+  function getForecastItemsAfterStartTime(forecastItems) {
+    return forecastItems.filter(function(item) { return moment(item.time).isAfter(startTime) })
+  }
 }
 
 
