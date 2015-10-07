@@ -6,10 +6,10 @@ var moment = require('moment')
 var utils = require('./utils')
 
 
-function getForecastFromGrib(gribPath, latitude, longitude, startTime) {
+function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime) {
   var startTime = moment(startTime || 0)
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
-    .then(parseForecast)
+    .then(parseForecastItems)
     .then(getForecastItemsAfterStartTime)
 
   function getForecastItemsAfterStartTime(forecastItems) {
@@ -27,19 +27,19 @@ function getForecastFromGrib(gribPath, latitude, longitude, startTime) {
    ...
  ]
  */
-function parseForecast(gribGetOutput) {
+function parseForecastItems(gribGetOutput) {
   var lines = _.filter(gribGetOutput.split(/\n/), function(line) { return line.trim() !== '' })
   var forecastData = {}
-  var forecastDate, forecastTime
+  var itemDate, itemTime
 
   lines.forEach(function(line) {
     var parts = _.filter(line.split(/ /), function(line) { return line.trim() !== '' })
-    forecastDate = parts[1]
-    forecastTime = parts[2].length == 3 ? "0" + parts[2] : parts[2]
-    var forecastHour = parts[3]
+    itemDate = parts[1]
+    itemTime = parts[2].length == 3 ? "0" + parts[2] : parts[2]
+    var itemHour = parts[3]
     var datumName = parts[0]
     var datumValue = parseFloat(parts[4])
-    _.set(forecastData, forecastHour + '.' + datumName, datumValue)
+    _.set(forecastData, itemHour + '.' + datumName, datumValue)
   })
 
   _.forOwn(forecastData, function(value) {
@@ -51,15 +51,15 @@ function parseForecast(gribGetOutput) {
     value.pressureMbar = +(value.msl / 100).toFixed(1)
   })
 
-  var forecastDateTime = moment(forecastDate + forecastTime + '+0000', 'YYYYMMDDHHmmZ')
+  var itemDateTime = moment(itemDate + itemTime + '+0000', 'YYYYMMDDHHmmZ')
 
   _.forOwn(forecastData, function(value, key) {
-    value.time = forecastDateTime.clone().add(key, 'h').toDate()
+    value.time = itemDateTime.clone().add(key, 'h').toDate()
   })
 
   return _.values(forecastData)
 }
 
 module.exports = {
-  getForecastFromGrib: getForecastFromGrib
+  getForecastItemsFromGrib: getForecastItemsFromGrib
 }

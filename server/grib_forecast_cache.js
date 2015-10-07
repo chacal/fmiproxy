@@ -24,7 +24,7 @@ function getForecasts(bounds, startTime) {
     return geolib.isPointInside({ latitude: forecast.lat, longitude: forecast.lng }, corners)
   })
   var filteredByTime = _.map(forecastsInBounds, function(forecast) {
-    forecast.forecasts = _.filter(forecast.forecasts, function(item) { return moment(item.time).isAfter(startTime) })
+    forecast.items = _.filter(forecast.items, function(item) { return moment(item.time).isAfter(startTime) })
     return forecast
   })
   return filteredByTime
@@ -34,31 +34,31 @@ function refreshFrom(gribFile) {
   var startTime = new Date()
   console.log('Refreshing forecast cache..')
   return getGribBounds(gribFile)
-    .then(function(bounds) { return createForecastPoints(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT) })
-    .then(function(forecastPoints) { return getForecastsFromGrib(forecastPoints, gribFile) })
+    .then(function(bounds) { return createForecastLocations(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT) })
+    .then(function(forecastLocations) { return getForecastsFromGrib(forecastLocations, gribFile) })
     .then(function(forecasts) { cachedForecasts = forecasts })
     .then(function() { console.log('Forecast cache refreshed in ' + (new Date() - startTime) + 'ms. Contains ' + cachedForecasts.length + ' points.')})
 }
 
 
-function getForecastsFromGrib(points, gribFile) {
-  return Promise.map(points, function(point) {
-    return gribParser.getForecastFromGrib(gribFile, point.lat, point.lng)
-      .then(function(forecast) { return _.extend(point, { forecasts: forecast }) })
+function getForecastsFromGrib(locations, gribFile) {
+  return Promise.map(locations, function(location) {
+    return gribParser.getForecastItemsFromGrib(gribFile, location.lat, location.lng)
+      .then(function(forecastItems) { return _.extend(location, { items: forecastItems }) })
   }, { concurrency: CPU_COUNT })
 }
 
-function createForecastPoints(bounds, latIncrement, lngIncrement) {
-  var forecastPoints = []
+function createForecastLocations(bounds, latIncrement, lngIncrement) {
+  var forecastLocations = []
   var latitudes = _.map(_.range(bounds.swCorner.lat, bounds.neCorner.lat, latIncrement), roundTo1Decimal)
   var longitudes = _.map(_.range(bounds.swCorner.lng, bounds.neCorner.lng, lngIncrement), roundTo1Decimal)
 
   latitudes.forEach(function(lat) {
     longitudes.forEach(function(lng) {
-      forecastPoints.push({lat: lat, lng: lng})
+      forecastLocations.push({lat: lat, lng: lng})
     })
   })
-  return forecastPoints
+  return forecastLocations
 }
 
 function getGribBounds(gribFile) {
