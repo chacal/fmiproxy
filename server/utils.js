@@ -33,10 +33,8 @@ function getFmiXMLasJson(url) {
 
 function getStationInfoFromGmlPoint(gmlPoint) {
   var name = gmlPoint['gml:name'][0]
-  var location = gmlPoint['gml:pos'][0].trim()
-  var latitude = location.substr(0, location.indexOf(' '))
-  var longitude = location.substr(location.indexOf(' ') + 1)
-  return {name: name, latitude: parseFloat(latitude), longitude: parseFloat(longitude)}
+  var position = gmlPoint['gml:pos'][0].trim()
+  return _.extend({ name: name }, locationFromPositionString(position))
 }
 
 function getGeoidFromGridSeriesObservation(gridSeriesObservation) {
@@ -45,10 +43,17 @@ function getGeoidFromGridSeriesObservation(gridSeriesObservation) {
   return _.find(gmlNames, function(name) { return _.get(name, '$.codeSpace') === 'http://xml.fmi.fi/namespace/locationcode/geoid' })._
 }
 
+function locationFromPositionString(position) {
+  var position = position.trim()
+  var latitude = position.substr(0, position.indexOf(' '))
+  var longitude = position.trim().substr(position.indexOf(' ') + 1)
+  return { latitude: parseFloat(latitude), longitude: parseFloat(longitude) }
+}
 
 module.exports = {
   grib_get: grib_get,
   getFmiXMLasJson: getFmiXMLasJson,
   getStationInfoFromGmlPoint: getStationInfoFromGmlPoint,
-  getGeoidFromGridSeriesObservation: getGeoidFromGridSeriesObservation
+  getGeoidFromGridSeriesObservation: getGeoidFromGridSeriesObservation,
+  locationFromPositionString: locationFromPositionString
 }
