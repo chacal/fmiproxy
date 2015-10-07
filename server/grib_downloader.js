@@ -32,6 +32,7 @@ function init(apiKey) {
   function updateGribIfNeeded() {
     console.log('Checking for new grib..')
     return Promise.join(getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp(), function(downloadedTime, publishedTime) {
+      console.log('Downloaded grib timestamp: ', downloadedTime, ' Latest published grib timestamp: ', publishedTime)
       return moment(downloadedTime).diff(moment(publishedTime)) === 0
     })
     .then(function(downloadedGribUpToDate) {
