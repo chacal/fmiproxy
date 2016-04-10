@@ -3,6 +3,9 @@ var cors = require('cors')
 var compression = require('compression')
 var Promise = require('bluebird')
 var _ = require('lodash')
+var morgan = require('morgan')
+var logging = require('./server/logging.js')
+var logger = logging.console
 var FMIAPIKey = process.env.FMI_API_KEY || require('./apikey').key
 var geocode = require('./server/reverse_geocode.js')
 var gribParser = require('./server/grib_get_parser.js')
@@ -12,6 +15,7 @@ var forecastCache = require('./server/grib_forecast_cache')
 
 var app = express()
 app.set('port', (process.env.PORT || 8000))
+app.use(morgan(logging.requestLoggingFormat, { stream: logging.fileLoggerStream }))
 app.use(cors())
 app.use(compression())
 
