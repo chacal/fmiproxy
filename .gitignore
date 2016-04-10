@@ -2,3 +2,5 @@
 apikey.json
 node_modules
 gribs/
+.vagrant/
+logs/

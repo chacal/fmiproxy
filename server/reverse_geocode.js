@@ -5,13 +5,14 @@ var _ = require('lodash')
 var geolib = require('geolib')
 var moment = require('moment')
 var utils = require('./utils')
+var logger = require('./logging.js').console
 var xpath = require('xpath')
 var dom = require('xmldom').DOMParser
 
 var observationStations = []
 
 function init(apiKey) {
-  console.log("Updating observation station cache..")
+  logger.info("Updating observation station cache..")
   var lastFullHour = moment().minutes(0).seconds(0).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"
   var observationsUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
 
@@ -34,7 +35,7 @@ function init(apiKey) {
     })
     .then(function(stations) {
       observationStations = stations
-      console.log("Loaded " + stations.length + " observation stations.")
+      logger.info("Loaded " + stations.length + " observation stations.")
     })
 }
 

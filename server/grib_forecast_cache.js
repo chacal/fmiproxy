@@ -4,6 +4,7 @@ var Promise = require('bluebird')
 var gribParser = require('./grib_get_parser')
 var geolib = require('geolib')
 var moment = require('moment')
+var logger = require('./logging.js').console
 
 
 var CPU_COUNT = require('os').cpus().length
@@ -32,12 +33,12 @@ function getForecasts(bounds, startTime) {
 
 function refreshFrom(gribFile) {
   var startTime = new Date()
-  console.log('Refreshing forecast cache..')
+  logger.info('Refreshing forecast cache..')
   return getGribBounds(gribFile)
     .then(function(bounds) { return createForecastLocations(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT) })
     .then(function(forecastLocations) { return getForecastsFromGrib(forecastLocations, gribFile) })
     .then(function(forecasts) { cachedForecasts = forecasts })
-    .then(function() { console.log('Forecast cache refreshed in ' + (new Date() - startTime) + 'ms. Contains ' + cachedForecasts.length + ' points.')})
+    .then(function() { logger.info('Forecast cache refreshed in ' + (new Date() - startTime) + 'ms. Contains ' + cachedForecasts.length + ' points.')})
 }
 
 

@@ -6,6 +6,8 @@ var mkdirp = Promise.promisify(require('mkdirp'));
 var _ = require('lodash')
 var moment = require('moment')
 var utils = require('./utils')
+var logger = require('./logging.js').console
+
 var gribCache = require('./grib_forecast_cache')
 
 var gribDir = __dirname + '/../gribs'
@@ -13,7 +15,7 @@ var latestGrib = gribDir + '/latest.grb'
 var gribUpdateCheckIntervalMillis = 10 * 60 * 1000
 
 function init(apiKey) {
-  console.log("Initializing grib downloader.")
+  logger.info("Initializing grib downloader.")
 
   return mkdirp(gribDir)
     .then(updateGribIfNeeded)
@@ -30,9 +32,9 @@ function init(apiKey) {
   }
 
   function updateGribIfNeeded() {
-    console.log('Checking for new grib..')
+    logger.info('Checking for new grib..')
     return Promise.join(getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp(), function(downloadedTime, publishedTime) {
-      console.log('Downloaded grib timestamp: ', downloadedTime, ' Latest published grib timestamp: ', publishedTime)
+      logger.info('Downloaded grib timestamp: ', downloadedTime, ' Latest published grib timestamp: ', publishedTime)
       return moment(downloadedTime).diff(moment(publishedTime)) === 0
     })
     .then(function(downloadedGribUpToDate) {
@@ -40,7 +42,7 @@ function init(apiKey) {
         return downloadLatestGrib()
           .then(function() { return true })
       } else {
-        console.log("Downloaded HIRLAM grib is already up-to-date.")
+        logger.info("Downloaded HIRLAM grib is already up-to-date.")
         return false
       }
     })
@@ -73,18 +75,18 @@ function init(apiKey) {
 
   function downloadLatestGrib() {
     var gribUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
-    console.log("Downloading latest HIRLAM grib..")
+    logger.info("Downloading latest HIRLAM grib..")
     return request.getAsync(gribUrl, { encoding: null })
       .spread(function(res, gribFileBuffer) {
         if(gribFileBuffer.length === 0) {
-          console.log("WARN: Got empty response when downloading grib. Retrying..")
+          console.warn("Got empty response when downloading grib. Retrying..")
           return Promise.delay(5000).then(downloadLatestGrib)
         } else {
           return fs.writeFileAsync(latestGrib + '.tmp', gribFileBuffer)
             .then(function() {
               return fs.renameAsync(latestGrib + '.tmp', latestGrib)
             })
-            .then(function() { console.log('Successfully downloaded new grib file! (' + gribFileBuffer.length + ' bytes)') })
+            .then(function() { logger.info('Successfully downloaded new grib file! (' + gribFileBuffer.length + ' bytes)') })
             .then(function() { gribCache.refreshFrom(latestGrib) })
         }
       })

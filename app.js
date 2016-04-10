@@ -19,13 +19,13 @@ app.use(morgan(logging.requestLoggingFormat, { stream: logging.fileLoggerStream 
 app.use(cors())
 app.use(compression())
 
-console.log("Starting fmiproxy..")
+logger.info("Starting fmiproxy..")
 
 Promise.join(geocode.init(FMIAPIKey), gribDownloader.init(FMIAPIKey))
   .then(startServer)
 
 function startServer() {
-  console.log("Starting HTTP server..")
+  logger.info("Starting HTTP server..")
 
   app.get("/nearest-station", function(req, res, next) {
     res.json(geocode.getNearestStation(req.query.lat, req.query.lon)).end()
@@ -67,11 +67,11 @@ function startServer() {
   })
 
   app.listen(app.get('port'), function() {
-    console.log("FMI proxy is running at localhost:" + app.get('port'))
+    logger.info("FMI proxy is running at localhost:" + app.get('port'))
   })
 
   app.use(function (err, req, res, next) {
-    console.log(err)
+    logger.error(err)
     res.status(err.status || 500)
     res.json({
       message: err.message,
