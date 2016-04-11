@@ -1,6 +1,7 @@
 var gribGet = require('./utils').grib_get
 var _ = require('lodash')
 var Promise = require('bluebird')
+var fs = Promise.promisifyAll(require('fs'))
 var gribParser = require('./grib_get_parser')
 var geolib = require('geolib')
 var moment = require('moment')
@@ -11,6 +12,7 @@ var CPU_COUNT = require('os').cpus().length
 var LAT_GRID_INCREMENT = 0.2
 var LNG_GRID_INCREMENT = 0.5
 var cachedForecasts = []
+var gribTimestamp = undefined
 
 
 function getForecasts(bounds, startTime) {
@@ -34,7 +36,9 @@ function getForecasts(bounds, startTime) {
 function refreshFrom(gribFile) {
   var startTime = new Date()
   logger.info('Refreshing forecast cache..')
-  return getGribBounds(gribFile)
+  return getGribTimestamp(gribFile)
+    .tap(function(timestamp) { gribTimestamp = timestamp })
+    .then(function() { return getGribBounds(gribFile) })
     .then(function(bounds) { return createForecastLocations(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT) })
     .then(function(forecastLocations) { return getForecastsFromGrib(forecastLocations, gribFile) })
     .then(function(forecasts) { cachedForecasts = forecasts })
@@ -71,11 +75,29 @@ function getGribBounds(gribFile) {
     })
 }
 
+function getGribTimestamp(gribFile) {
+  return fs.statAsync(gribFile)
+    .then(function() {
+      return gribGet(['-p', 'dataDate,dataTime', gribFile])
+    })
+    .then(function(output) {
+      var parts = output.split(/\n/)[0].split(/ /)
+      var dataDate = parts[0]
+      var dataTime = parts[1]
+      return moment(dataDate + dataTime + '+0000', 'YYYYMMDDHHmmZ').toDate()
+    })
+    .catch(function() {
+      return undefined
+    })
+
+}
+
 function roundTo1Decimal(num) {
   return Math.round( num * 10 ) / 10
 }
 
 module.exports = {
   refreshFrom: refreshFrom,
-  getForecasts: getForecasts
+  getForecasts: getForecasts,
+  getGribTimestamp: getGribTimestamp
 }

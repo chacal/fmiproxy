@@ -49,19 +49,7 @@ function init(apiKey) {
   }
 
   function getLatestDownloadedGribTimestamp() {
-    return fs.statAsync(latestGrib)
-      .then(function() {
-        return utils.grib_get(['-p', 'dataDate,dataTime', latestGrib])
-      })
-      .then(function(output) {
-        var parts = output.split(/\n/)[0].split(/ /)
-        var dataDate = parts[0]
-        var dataTime = parts[1]
-        return moment(dataDate + dataTime + '+0000', 'YYYYMMDDHHmmZ').toDate()
-      })
-      .catch(function() {
-        return undefined
-      })
+    return gribCache.getGribTimestamp(latestGrib)
   }
 
   function getLatestPublishedGribTimestamp() {
