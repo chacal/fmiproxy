@@ -9,8 +9,11 @@ var utils = require('./utils')
 function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime) {
   var startTime = moment(startTime || 0)
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
-    .then(parseForecastItems)
-    .then(getForecastItemsAfterStartTime)
+    .then(parseForecastTimeAndItems)
+    .then(function(forecastTimeAndItems) {
+      forecastTimeAndItems.forecastItems = getForecastItemsAfterStartTime(forecastTimeAndItems.forecastItems)
+      return forecastTimeAndItems
+    })
 
   function getForecastItemsAfterStartTime(forecastItems) {
     return forecastItems.filter(function(item) { return moment(item.time).isAfter(startTime) })
@@ -27,7 +30,7 @@ function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime) {
    ...
  ]
  */
-function parseForecastItems(gribGetOutput) {
+function parseForecastTimeAndItems(gribGetOutput) {
   var lines = _.filter(gribGetOutput.split(/\n/), function(line) { return line.trim() !== '' })
   var forecastData = {}
   var itemDate, itemTime
@@ -57,7 +60,7 @@ function parseForecastItems(gribGetOutput) {
     value.time = itemDateTime.clone().add(key, 'h').toDate()
   })
 
-  return _.values(forecastData)
+  return { forecastTime: itemDateTime.toDate(), forecastItems: _.values(forecastData) }
 }
 
 module.exports = {

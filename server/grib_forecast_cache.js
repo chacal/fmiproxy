@@ -30,7 +30,7 @@ function getForecasts(bounds, startTime) {
     forecast.items = _.filter(forecast.items, function(item) { return moment(item.time).isAfter(startTime) })
     return forecast
   })
-  return filteredByTime
+  return { forecastTime: gribTimestamp, forecastItems: filteredByTime }
 }
 
 function refreshFrom(gribFile) {
@@ -49,7 +49,7 @@ function refreshFrom(gribFile) {
 function getForecastsFromGrib(locations, gribFile) {
   return Promise.map(locations, function(location) {
     return gribParser.getForecastItemsFromGrib(gribFile, location.lat, location.lng)
-      .then(function(forecastItems) { return _.extend(location, { items: forecastItems }) })
+      .then(function(forecast) { return _.extend(location, { items: forecast.forecastItems }) })
   }, { concurrency: CPU_COUNT })
 }
 
