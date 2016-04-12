@@ -38,7 +38,7 @@ function parseForecastTimeAndItems(gribGetOutput) {
   lines.forEach(function(line) {
     var parts = _.filter(line.split(/ /), function(line) { return line.trim() !== '' })
     itemDate = parts[1]
-    itemTime = parts[2].length == 3 ? "0" + parts[2] : parts[2]
+    itemTime = parts[2]
     var itemHour = parts[3]
     var datumName = parts[0]
     var datumValue = parseFloat(parts[4])
@@ -54,7 +54,7 @@ function parseForecastTimeAndItems(gribGetOutput) {
     value.pressureMbar = +(value.msl / 100).toFixed(1)
   })
 
-  var itemDateTime = moment(itemDate + itemTime + '+0000', 'YYYYMMDDHHmmZ')
+  var itemDateTime = utils.parseHourlyTimestampFromGribItemDateAndTime(itemDate, itemTime)
 
   _.forOwn(forecastData, function(value, key) {
     value.time = itemDateTime.clone().add(key, 'h').toDate()

@@ -6,6 +6,7 @@ var gribParser = require('./grib_get_parser')
 var geolib = require('geolib')
 var moment = require('moment')
 var logger = require('./logging.js').console
+var utils = require('./utils.js')
 
 
 var CPU_COUNT = require('os').cpus().length
@@ -84,7 +85,7 @@ function getGribTimestamp(gribFile) {
       var parts = output.split(/\n/)[0].split(/ /)
       var dataDate = parts[0]
       var dataTime = parts[1]
-      return moment(dataDate + dataTime + '+0000', 'YYYYMMDDHHmmZ').toDate()
+      return utils.parseHourlyTimestampFromGribItemDateAndTime(dataDate, dataTime).toDate()
     })
     .catch(function() {
       return undefined

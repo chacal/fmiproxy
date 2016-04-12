@@ -3,6 +3,7 @@ var request = Promise.promisifyAll(require('request'))
 var xml2js = Promise.promisifyAll(require('xml2js'))
 var child_process = require('child_process')
 var _ = require('lodash')
+var moment = require('moment')
 
 
 function grib_get(params) {
@@ -50,10 +51,18 @@ function locationFromPositionString(position) {
   return { latitude: parseFloat(latitude), longitude: parseFloat(longitude) }
 }
 
+function parseHourlyTimestampFromGribItemDateAndTime(date, time) {
+  // Return timestamp with one hour precision (ignores minutes)
+  // Works correctly for time inputs: '0', '12', '1600', '1230'
+  // Assumes that the date & time are given in GMT time zone
+  return moment(date + time + '+0000', 'YYYYMMDDHHZ')
+}
+
 module.exports = {
   grib_get: grib_get,
   getFmiXMLasJson: getFmiXMLasJson,
   getStationInfoFromGmlPoint: getStationInfoFromGmlPoint,
   getGeoidFromGridSeriesObservation: getGeoidFromGridSeriesObservation,
-  locationFromPositionString: locationFromPositionString
+  locationFromPositionString: locationFromPositionString,
+  parseHourlyTimestampFromGribItemDateAndTime: parseHourlyTimestampFromGribItemDateAndTime
 }
