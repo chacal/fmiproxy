@@ -53,8 +53,9 @@ function locationFromPositionString(position) {
 
 function parseHourlyTimestampFromGribItemDateAndTime(date, time) {
   // Return timestamp with one hour precision (ignores minutes)
-  // Works correctly for time inputs: '0', '12', '1600', '1230'
+  // Works correctly for time inputs: '0', '12', '600', '1600', '1230'
   // Assumes that the date & time are given in GMT time zone
+  var time = (time.length === 1 || time.length === 3) ? '0' + time : time
   return moment(date + time + '+0000', 'YYYYMMDDHHZ')
 }
 
