@@ -7,6 +7,7 @@ var morgan = require('morgan')
 var logging = require('./server/logging.js')
 var logger = logging.console
 var FMIAPIKey = process.env.FMI_API_KEY || require('./apikey').key
+var MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
 var geocode = require('./server/reverse_geocode.js')
 var gribParser = require('./server/grib_get_parser.js')
 var observations = require('./server/observations.js')(FMIAPIKey)
@@ -27,11 +28,11 @@ Promise.join(geocode.init(FMIAPIKey), gribDownloader.init(FMIAPIKey))
 function startServer() {
   logger.info("Starting HTTP server..")
 
-  app.get("/nearest-station", function(req, res, next) {
+  app.get(MOUNT_PREFIX + "/nearest-station", function(req, res, next) {
     res.json(geocode.getNearestStation(req.query.lat, req.query.lon)).end()
   })
 
-  app.get("/hirlam-forecast", function(req, res, next) {
+  app.get(MOUNT_PREFIX + "/hirlam-forecast", function(req, res, next) {
     if(req.query.bounds && (req.query.lat || req.query.lon)) {
       res.status(400).json({message: 'Use either bounds or lat & lon, not both!'}).end()
     } else if(req.query.bounds) {
@@ -50,7 +51,7 @@ function startServer() {
     }
   })
 
-  app.get("/observations", function(req, res, next) {
+  app.get(MOUNT_PREFIX + "/observations", function(req, res, next) {
     if(req.query.geoid && req.query.place) {
       res.status(400).json({message: 'Use either geiod or place, not both!'}).end()
     } else if(req.query.geoid) {
