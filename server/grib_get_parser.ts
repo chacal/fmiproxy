@@ -1,11 +1,10 @@
-var _ = require('lodash')
-var Victor = require('victor')
-var moment = require('moment')
-var utils = require('./utils')
+import _ = require('lodash')
+import Victor = require('victor')
+import moment = require('moment')
+const utils = require('./utils')
 
 
-function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime) {
-  var startTime = moment(startTime || 0)
+function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0) {
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
     .then(parseForecastTimeAndItems)
     .then(function(forecastTimeAndItems) {
@@ -14,7 +13,7 @@ function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime) {
     })
 
   function getForecastItemsAfterStartTime(forecastItems) {
-    return forecastItems.filter(function(item) { return moment(item.time).isAfter(startTime) })
+    return forecastItems.filter(function(item) { return moment(item.time).isAfter(moment(startTime)) })
   }
 }
 
@@ -29,32 +28,32 @@ function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime) {
  ]
  */
 function parseForecastTimeAndItems(gribGetOutput) {
-  var lines = _.filter(gribGetOutput.split(/\n/), function(line) { return line.trim() !== '' })
-  var forecastData = {}
+  const lines = _.filter(gribGetOutput.split(/\n/), function(line: string) { return line.trim() !== '' })
+  const forecastData = {}
   var itemDate, itemTime
 
   lines.forEach(function(line) {
-    var parts = _.filter(line.split(/ /), function(line) { return line.trim() !== '' })
+    const parts = _.filter(line.split(/ /), function(line) { return line.trim() !== '' })
     itemDate = parts[1]
     itemTime = parts[2]
-    var itemHour = parts[3]
-    var datumName = parts[0]
-    var datumValue = parseFloat(parts[4])
+    const itemHour = parts[3]
+    const datumName = parts[0]
+    const datumValue = parseFloat(parts[4])
     _.set(forecastData, itemHour + '.' + datumName, datumValue)
   })
 
-  _.forOwn(forecastData, function(value) {
-    var wind = new Victor(value['10v'], value['10u'])
-    var windSpeedMs = +wind.length().toFixed(1)
-    var windDir = Math.round(wind.horizontalAngleDeg() + 180)
+  _.forOwn(forecastData, function(value: any) {
+    const wind = new Victor(value['10v'], value['10u'])
+    const windSpeedMs = +wind.length().toFixed(1)
+    const windDir = Math.round(wind.horizontalAngleDeg() + 180)
     value.windSpeedMs = windSpeedMs
     value.windDir = windDir
     value.pressureMbar = +(value.msl / 100).toFixed(1)
   })
 
-  var itemDateTime = utils.parseHourlyTimestampFromGribItemDateAndTime(itemDate, itemTime)
+  const itemDateTime = utils.parseHourlyTimestampFromGribItemDateAndTime(itemDate, itemTime)
 
-  _.forOwn(forecastData, function(value, key) {
+  _.forOwn(forecastData, function(value: any, key) {
     value.time = itemDateTime.clone().add(key, 'h').toDate()
   })
 
