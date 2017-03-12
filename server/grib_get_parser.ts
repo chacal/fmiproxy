@@ -13,7 +13,7 @@ function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0) 
     })
 
   function getForecastItemsAfterStartTime(forecastItems) {
-    return forecastItems.filter(function(item) { return moment(item.time).isAfter(moment(startTime)) })
+    return forecastItems.filter(item => moment(item.time).isAfter(moment(startTime)))
   }
 }
 
@@ -27,13 +27,13 @@ function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0) 
    ...
  ]
  */
-function parseForecastTimeAndItems(gribGetOutput) {
-  const lines = _.filter(gribGetOutput.split(/\n/), function(line: string) { return line.trim() !== '' })
+function parseForecastTimeAndItems(gribGetOutput: string) {
+  const lines = gribGetOutput.split(/\n/).filter(line => line.trim() !== '')
   const forecastData = {}
   var itemDate, itemTime
 
-  lines.forEach(function(line) {
-    const parts = _.filter(line.split(/ /), function(line) { return line.trim() !== '' })
+  lines.forEach(line => {
+    const parts = line.split(/ /).filter(line => line.trim() !== '')
     itemDate = parts[1]
     itemTime = parts[2]
     const itemHour = parts[3]
@@ -42,7 +42,7 @@ function parseForecastTimeAndItems(gribGetOutput) {
     _.set(forecastData, itemHour + '.' + datumName, datumValue)
   })
 
-  _.forOwn(forecastData, function(value: any) {
+  _.forOwn(forecastData, (value: any) => {
     const wind = new Victor(value['10v'], value['10u'])
     const windSpeedMs = +wind.length().toFixed(1)
     const windDir = Math.round(wind.horizontalAngleDeg() + 180)
@@ -53,7 +53,7 @@ function parseForecastTimeAndItems(gribGetOutput) {
 
   const itemDateTime = utils.parseHourlyTimestampFromGribItemDateAndTime(itemDate, itemTime)
 
-  _.forOwn(forecastData, function(value: any, key) {
+  _.forOwn(forecastData, (value: any, key) => {
     value.time = itemDateTime.clone().add(key, 'h').toDate()
   })
 
