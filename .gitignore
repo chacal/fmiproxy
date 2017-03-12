@@ -4,3 +4,4 @@ node_modules
 gribs/
 .vagrant/
 logs/
+built/
