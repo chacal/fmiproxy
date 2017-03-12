@@ -1,5 +1,5 @@
-var Promise = require('bluebird')
-var fs = Promise.promisifyAll(require('fs'))
+var BPromise = require('bluebird')
+var fs = BPromise.promisifyAll(require('fs'))
 var _ = require('lodash')
 var Victor = require('victor')
 var moment = require('moment')

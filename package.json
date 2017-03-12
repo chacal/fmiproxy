@@ -18,6 +18,8 @@
   },
   "homepage": "https://github.com/chacal/fmiproxy#readme",
   "dependencies": {
+    "@types/lodash": "^4.14.55",
+    "@types/node": "^7.0.8",
     "bluebird": "^3.5.0",
     "compression": "^1.6.0",
     "cors": "^2.7.1",
