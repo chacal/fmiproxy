@@ -1,7 +1,7 @@
 var gribGet = require('./utils').grib_get
 var _ = require('lodash')
-var Promise = require('bluebird')
-var fs = Promise.promisifyAll(require('fs'))
+var BPromise = require('bluebird')
+var fs = BPromise.promisifyAll(require('fs'))
 var gribParser = require('./grib_get_parser')
 var geolib = require('geolib')
 var moment = require('moment')
@@ -43,12 +43,12 @@ function refreshFrom(gribFile) {
     .then(function(bounds) { return createForecastLocations(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT) })
     .then(function(forecastLocations) { return getForecastsFromGrib(forecastLocations, gribFile) })
     .then(function(forecasts) { cachedForecasts = forecasts })
-    .then(function() { logger.info('Forecast cache refreshed in ' + (new Date() - startTime) + 'ms. Contains ' + cachedForecasts.length + ' points.')})
+    .then(function() { logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecasts.length + ' points.')})
 }
 
 
 function getForecastsFromGrib(locations, gribFile) {
-  return Promise.map(locations, function(location) {
+  return BPromise.map(locations, function(location) {
     return gribParser.getForecastItemsFromGrib(gribFile, location.lat, location.lng)
       .then(function(forecast) { return _.extend(location, { items: forecast.forecastItems }) })
   }, { concurrency: CPU_COUNT })
