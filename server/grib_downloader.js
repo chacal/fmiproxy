@@ -65,7 +65,8 @@ function init(apiKey) {
     var gribUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
     logger.info("Downloading latest HIRLAM grib..")
     return request.getAsync(gribUrl, { encoding: null })
-      .spread(function(res, gribFileBuffer) {
+      .then(function(res) {
+        var gribFileBuffer = res.body
         if(gribFileBuffer.length === 0) {
           console.warn("Got empty response when downloading grib. Retrying..")
           return Promise.delay(5000).then(downloadLatestGrib)

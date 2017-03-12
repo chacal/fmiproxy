@@ -17,8 +17,8 @@ function init(apiKey) {
   var observationsUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
 
   return request.getAsync(observationsUrl)
-    .spread(function(res, body) {
-      var doc = new dom().parseFromString(body.toString())
+    .then(function(res) {
+      var doc = new dom().parseFromString(res.body.toString())
       var select = xpath.useNamespaces({
         target: 'http://xml.fmi.fi/namespace/om/atmosphericfeatures/1.0',
         gml: 'http://www.opengis.net/gml/3.2',

@@ -27,8 +27,8 @@ function grib_get(params) {
 
 function getFmiXMLasJson(url) {
   return request.getAsync(url)
-    .spread(function(res, body) {
-      return xml2js.parseStringAsync(body)
+    .then(function(res) {
+      return xml2js.parseStringAsync(res.body)
     })
 }
 
