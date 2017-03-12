@@ -14,7 +14,7 @@ var gribDir = __dirname + '/../gribs'
 var latestGrib = gribDir + '/latest.grb'
 var gribUpdateCheckIntervalMillis = 10 * 60 * 1000
 
-function init(apiKey) {
+function initDownloader(apiKey) {
   logger.info("Initializing grib downloader.")
 
   return mkdirp(gribDir)
@@ -84,6 +84,6 @@ function init(apiKey) {
 
 
 module.exports = {
-  init: init,
+  init: initDownloader,
   gribFile: latestGrib
 }

@@ -1,6 +1,3 @@
-var Promise = require('bluebird')
-var request = Promise.promisifyAll(require('request'))
-var xml2js = Promise.promisifyAll(require('xml2js'))
 var _ = require('lodash')
 var utils = require('./utils')
 

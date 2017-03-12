@@ -1,13 +1,13 @@
-var Promise = require('bluebird')
-var request = Promise.promisifyAll(require('request'))
-var xml2js = Promise.promisifyAll(require('xml2js'))
+var BPromise = require('bluebird')
+var request = BPromise.promisifyAll(require('request'))
+var xml2js = BPromise.promisifyAll(require('xml2js'))
 var child_process = require('child_process')
 var _ = require('lodash')
 var moment = require('moment')
 
 
 function grib_get(params) {
-  return new Promise(function (resolve, reject) {
+  return new BPromise(function (resolve, reject) {
     var grib_get = child_process.spawn('grib_get', params)
     var output = ""
     var errorOutput = ""

@@ -1,7 +1,7 @@
 var express = require('express')
 var cors = require('cors')
 var compression = require('compression')
-var Promise = require('bluebird')
+var BPromise = require('bluebird')
 var _ = require('lodash')
 var morgan = require('morgan')
 var logging = require('./logging.js')
@@ -22,7 +22,7 @@ app.use(compression())
 
 logger.info("Starting fmiproxy..")
 
-Promise.join(geocode.init(FMIAPIKey), gribDownloader.init(FMIAPIKey))
+BPromise.join(geocode.init(FMIAPIKey), gribDownloader.init(FMIAPIKey))
   .then(startServer)
 
 function startServer() {
