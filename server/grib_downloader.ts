@@ -1,8 +1,8 @@
-var Promise = require('bluebird')
-var fs = Promise.promisifyAll(require('fs'))
-var request = Promise.promisifyAll(require('request'))
-var xml2js = Promise.promisifyAll(require('xml2js'))
-var mkdirp = Promise.promisify(require('mkdirp'));
+var BPromise = require('bluebird')
+var fs = BPromise.promisifyAll(require('fs'))
+var request = BPromise.promisifyAll(require('request'))
+var xml2js = BPromise.promisifyAll(require('xml2js'))
+var mkdirp = BPromise.promisify(require('mkdirp'));
 var _ = require('lodash')
 var moment = require('moment')
 var utils = require('./utils')
@@ -25,7 +25,7 @@ function init(apiKey) {
     })
 
   function scheduleGribUpdates() {
-    return Promise.delay(gribUpdateCheckIntervalMillis)
+    return BPromise.delay(gribUpdateCheckIntervalMillis)
       .then(updateGribIfNeeded)
       .then(scheduleGribUpdates)
       .catch(scheduleGribUpdates)
@@ -33,7 +33,7 @@ function init(apiKey) {
 
   function updateGribIfNeeded() {
     logger.info('Checking for new grib..')
-    return Promise.join(getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp(), function(downloadedTime, publishedTime) {
+    return BPromise.join(getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp(), function(downloadedTime, publishedTime) {
       logger.info('Downloaded grib timestamp: ', downloadedTime, ' Latest published grib timestamp: ', publishedTime)
       return moment(downloadedTime).diff(moment(publishedTime)) === 0
     })
@@ -69,7 +69,7 @@ function init(apiKey) {
         var gribFileBuffer = res.body
         if(gribFileBuffer.length === 0) {
           console.warn("Got empty response when downloading grib. Retrying..")
-          return Promise.delay(5000).then(downloadLatestGrib)
+          return BPromise.delay(5000).then(downloadLatestGrib)
         } else {
           return fs.writeFileAsync(latestGrib + '.tmp', gribFileBuffer)
             .then(function() {
