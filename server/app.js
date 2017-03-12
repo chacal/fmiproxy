@@ -4,15 +4,15 @@ var compression = require('compression')
 var Promise = require('bluebird')
 var _ = require('lodash')
 var morgan = require('morgan')
-var logging = require('./server/logging.js')
+var logging = require('./logging.js')
 var logger = logging.console
-var FMIAPIKey = process.env.FMI_API_KEY || require('./apikey').key
+var FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
 var MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
-var geocode = require('./server/reverse_geocode.js')
-var gribParser = require('./server/grib_get_parser.js')
-var observations = require('./server/observations.js')(FMIAPIKey)
-var gribDownloader = require('./server/grib_downloader')
-var forecastCache = require('./server/grib_forecast_cache')
+var geocode = require('./reverse_geocode.js')
+var gribParser = require('./grib_get_parser.js')
+var observations = require('./observations.js')(FMIAPIKey)
+var gribDownloader = require('./grib_downloader.js')
+var forecastCache = require('./grib_forecast_cache.js')
 
 var app = express()
 app.set('port', (process.env.PORT || 8000))

@@ -1,2 +1,2 @@
 #!/bin/bash
-supervisor node app.js
+supervisor node built/app.js
