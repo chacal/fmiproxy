@@ -2,14 +2,14 @@ import _ = require('lodash')
 import Victor = require('victor')
 import moment = require('moment')
 const utils = require('./utils')
-import ForecastItem from './ForecastItem'
+import { Forecast, ForecastItem } from './ForecastDomain'
 
-function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0) {
+function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0): Forecast {
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
     .then(parseForecastTimeAndItems)
-    .then(function(forecastTimeAndItems) {
-      forecastTimeAndItems.forecastItems = getForecastItemsAfterStartTime(forecastTimeAndItems.forecastItems)
-      return forecastTimeAndItems
+    .then(function(forecast) {
+      forecast.forecastItems = getForecastItemsAfterStartTime(forecast.forecastItems)
+      return forecast
     })
 
   function getForecastItemsAfterStartTime(forecastItems) {
@@ -21,14 +21,14 @@ function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0) 
 /*
   For forecast format see ForecastItem
  */
-function parseForecastTimeAndItems(gribGetOutput: string) {
+function parseForecastTimeAndItems(gribGetOutput: string): Forecast {
   const lines = gribGetOutput.split(/\n/).filter(line => line.trim() !== '')
   const rawGribData: RawGribDatum[] = lines.map(parseGribLine)
   const gribDataGroupedByTime: RawGribDatum[][] = _.values(_.groupBy(rawGribData, datum => datum.time.getTime()))
   const forecastItems = gribDataGroupedByTime.map(createForecastItem)
   const sortedForecastItems = _.sortBy(forecastItems, item => item.time)
 
-  return { forecastTime: sortedForecastItems[0].time, forecastItems: sortedForecastItems }
+  return { publishTime: sortedForecastItems[0].time, forecastItems: sortedForecastItems }
 
 
   interface RawGribDatum {
