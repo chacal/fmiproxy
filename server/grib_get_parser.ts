@@ -2,7 +2,7 @@ import _ = require('lodash')
 import Victor = require('victor')
 import moment = require('moment')
 const utils = require('./utils')
-
+import ForecastItem from './ForecastItem'
 
 function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0) {
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
@@ -19,45 +19,60 @@ function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0) 
 
 
 /*
-  Forecast format:
- [
-   { '10v': 3.72291, '10u': 4.61555, msl: 100408, prate: 0, windSpeedMs: 5.9, windDir: 231, pressureMbar: 1004.1, time: Fri Sep 18 2015 20:00:00 GMT+0300 (EEST) },
-   { '10v': 3.34411, '10u': 4.40901, msl: 100432, prate: 0, windSpeedMs: 5.5, windDir: 233, pressureMbar: 1004.3, time: Fri Sep 18 2015 21:00:00 GMT+0300 (EEST) }
-   ...
-   ...
- ]
+  For forecast format see ForecastItem
  */
 function parseForecastTimeAndItems(gribGetOutput: string) {
   const lines = gribGetOutput.split(/\n/).filter(line => line.trim() !== '')
-  const forecastData = {}
-  var itemDate, itemTime
+  const rawGribData: RawGribDatum[] = lines.map(parseGribLine)
+  const gribDataGroupedByTime: RawGribDatum[][] = _.values(_.groupBy(rawGribData, datum => datum.time.getTime()))
+  const forecastItems = gribDataGroupedByTime.map(createForecastItem)
+  const sortedForecastItems = _.sortBy(forecastItems, item => item.time)
 
-  lines.forEach(line => {
+  return { forecastTime: sortedForecastItems[0].time, forecastItems: sortedForecastItems }
+
+
+  interface RawGribDatum {
+    name: string,
+    time: Date,
+    value: number
+  }
+
+  function parseGribLine(line) {
     const parts = line.split(/ /).filter(line => line.trim() !== '')
-    itemDate = parts[1]
-    itemTime = parts[2]
-    const itemHour = parts[3]
-    const datumName = parts[0]
-    const datumValue = parseFloat(parts[4])
-    _.set(forecastData, itemHour + '.' + datumName, datumValue)
-  })
 
-  _.forOwn(forecastData, (value: any) => {
-    const wind = new Victor(value['10v'], value['10u'])
+    const datumName = parts[0]
+    const date = parts[1]
+    const time = parts[2]
+    const timeIncrement = parts[3]
+    const datumValue = parseFloat(parts[4])
+
+    return {
+      name: datumName,
+      time: utils.parseHourlyTimestampFromGribItemDateAndTime(date, time).clone().add(timeIncrement, 'h').toDate(),
+      value: datumValue
+    }
+  }
+
+  function createForecastItem(dataForOneMoment: RawGribDatum[]): ForecastItem {
+    const combinedItem = _.assign({}, ...dataForOneMoment.map(createParsedDatum)) as { '10v': number, '10u': number, msl: number, prate: number, time: Date }
+
+    const wind = new Victor(combinedItem['10v'], combinedItem['10u'])
     const windSpeedMs = +wind.length().toFixed(1)
     const windDir = Math.round(wind.horizontalAngleDeg() + 180)
-    value.windSpeedMs = windSpeedMs
-    value.windDir = windDir
-    value.pressureMbar = +(value.msl / 100).toFixed(1)
-  })
+    const pressureMbar = +(combinedItem.msl / 100).toFixed(1)
 
-  const itemDateTime = utils.parseHourlyTimestampFromGribItemDateAndTime(itemDate, itemTime)
+    return {
+      prate: combinedItem.prate,
+      windSpeedMs,
+      windDir,
+      pressureMbar,
+      time: combinedItem.time
+    }
 
-  _.forOwn(forecastData, (value: any, key) => {
-    value.time = itemDateTime.clone().add(key, 'h').toDate()
-  })
-
-  return { forecastTime: itemDateTime.toDate(), forecastItems: _.values(forecastData) }
+    function createParsedDatum(datum: RawGribDatum) {
+      return { time: datum.time, [datum.name]: datum.value }
+    }
+  }
 }
 
 module.exports = {
