@@ -3,17 +3,15 @@ import Victor = require('victor')
 import moment = require('moment')
 const utils = require('./utils')
 import { Forecast, ForecastItem } from './ForecastDomain'
+import * as L from 'partial.lenses'
 
 function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0): Forecast {
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
     .then(parseForecastTimeAndItems)
-    .then(function(forecast) {
-      forecast.forecastItems = getForecastItemsAfterStartTime(forecast.forecastItems)
-      return forecast
-    })
+    .then(forecast => L.remove(['forecastItems', L.elems, L.when(isItemBeforeStartTime)], forecast))
 
-  function getForecastItemsAfterStartTime(forecastItems) {
-    return forecastItems.filter(item => moment(item.time).isAfter(moment(startTime)))
+  function isItemBeforeStartTime(item: ForecastItem) {
+    return moment(item.time).isBefore(moment(startTime))
   }
 }
 
