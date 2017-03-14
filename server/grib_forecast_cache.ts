@@ -27,11 +27,8 @@ function getForecasts(bounds, startTime) {
   var forecastsInBounds = _.filter(cachedForecasts, function(forecast) {
     return geolib.isPointInside({ latitude: forecast.lat, longitude: forecast.lng }, corners)
   })
-  var filteredByTime = _.map(forecastsInBounds, function(forecast) {
-    forecast.items = _.filter(forecast.items, function(item) { return moment(item.time).isAfter(startTime) })
-    return forecast
-  })
-  return { forecastTime: gribTimestamp, forecastItems: filteredByTime }
+  const forecast = { forecastTime: gribTimestamp, forecastItems: forecastsInBounds }
+  return utils.removeOlderForecastItems(forecast, startTime)
 }
 
 function refreshFrom(gribFile) {
