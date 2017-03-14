@@ -8,11 +8,7 @@ import R from './RamdaExt'
 function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0): Forecast {
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
     .then(parseForecastTimeAndItems)
-    .then(forecast => L.remove(['forecastItems', L.elems, L.when(isItemBeforeStartTime)], forecast))
-
-  function isItemBeforeStartTime(item: ForecastItem) {
-    return moment(item.time).isBefore(moment(startTime))
-  }
+    .then(forecast => utils.removeOlderForecastItems(forecast, startTime))
 }
 
 

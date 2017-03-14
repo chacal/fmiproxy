@@ -1,10 +1,11 @@
+import {ForecastItem, Forecast} from "./ForecastDomain"
 var BPromise = require('bluebird')
 var request = BPromise.promisifyAll(require('request'))
 var xml2js = BPromise.promisifyAll(require('xml2js'))
 var child_process = require('child_process')
 var _ = require('lodash')
 var moment = require('moment')
-
+import * as L from 'partial.lenses'
 
 function grib_get(params) {
   return new BPromise(function (resolve, reject) {
@@ -59,11 +60,20 @@ function parseHourlyTimestampFromGribItemDateAndTime(date, time) {
   return moment(date + time + '+0000', 'YYYYMMDDHHZ')
 }
 
+function removeOlderForecastItems(forecast: Forecast, time: Date): Forecast {
+  return L.remove(['forecastItems', L.elems, L.when(isItemBeforeStartTime)], forecast)
+
+  function isItemBeforeStartTime(item: ForecastItem) {
+    return moment(item.time).isBefore(moment(time))
+  }
+}
+
 module.exports = {
   grib_get: grib_get,
   getFmiXMLasJson: getFmiXMLasJson,
   getStationInfoFromGmlPoint: getStationInfoFromGmlPoint,
   getGeoidFromGridSeriesObservation: getGeoidFromGridSeriesObservation,
   locationFromPositionString: locationFromPositionString,
-  parseHourlyTimestampFromGribItemDateAndTime: parseHourlyTimestampFromGribItemDateAndTime
+  parseHourlyTimestampFromGribItemDateAndTime: parseHourlyTimestampFromGribItemDateAndTime,
+  removeOlderForecastItems
 }
