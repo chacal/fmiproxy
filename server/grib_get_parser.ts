@@ -1,9 +1,9 @@
-import _ = require('lodash')
 import Victor = require('victor')
 import moment = require('moment')
 const utils = require('./utils')
 import { Forecast, ForecastItem } from './ForecastDomain'
 import * as L from 'partial.lenses'
+import R from './RamdaExt'
 
 function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0): Forecast {
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
@@ -22,9 +22,9 @@ function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0):
 function parseForecastTimeAndItems(gribGetOutput: string): Forecast {
   const lines = getNonEmptySplittedStrings(gribGetOutput, /\n/)
   const rawGribData: RawGribDatum[] = lines.map(parseGribLine)
-  const gribDataGroupedByTime: RawGribDatum[][] = _.values(_.groupBy(rawGribData, datum => datum.time.getTime()))
+  const gribDataGroupedByTime: RawGribDatum[][] = R.pipe(R.groupBy(R.prop('time')), R.values)(rawGribData)
   const forecastItems = gribDataGroupedByTime.map(createForecastItem)
-  const sortedForecastItems = _.sortBy(forecastItems, item => item.time)
+  const sortedForecastItems = R.sortBy(item => item.time, forecastItems)
 
   return { publishTime: sortedForecastItems[0].time, forecastItems: sortedForecastItems }
 
@@ -52,7 +52,7 @@ function parseForecastTimeAndItems(gribGetOutput: string): Forecast {
   }
 
   function createForecastItem(dataForOneMoment: RawGribDatum[]): ForecastItem {
-    const combinedItem = _.assign({}, ...dataForOneMoment.map(createParsedDatum)) as { '10v': number, '10u': number, msl: number, prate: number, time: Date }
+    const combinedItem = R.mergeAll(dataForOneMoment.map(createParsedDatum)) as { '10v': number, '10u': number, msl: number, prate: number, time: Date }
 
     const wind = new Victor(combinedItem['10v'], combinedItem['10u'])
     const windSpeedMs = +wind.length().toFixed(1)
