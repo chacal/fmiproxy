@@ -20,7 +20,7 @@ function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0):
   For forecast format see ForecastItem
  */
 function parseForecastTimeAndItems(gribGetOutput: string): Forecast {
-  const lines = gribGetOutput.split(/\n/).filter(line => line.trim() !== '')
+  const lines = getNonEmptySplittedStrings(gribGetOutput, /\n/)
   const rawGribData: RawGribDatum[] = lines.map(parseGribLine)
   const gribDataGroupedByTime: RawGribDatum[][] = _.values(_.groupBy(rawGribData, datum => datum.time.getTime()))
   const forecastItems = gribDataGroupedByTime.map(createForecastItem)
@@ -36,7 +36,7 @@ function parseForecastTimeAndItems(gribGetOutput: string): Forecast {
   }
 
   function parseGribLine(line) {
-    const parts = line.split(/ /).filter(line => line.trim() !== '')
+    const parts = getNonEmptySplittedStrings(line, / /)
 
     const datumName = parts[0]
     const date = parts[1]
@@ -71,6 +71,8 @@ function parseForecastTimeAndItems(gribGetOutput: string): Forecast {
       return { time: datum.time, [datum.name]: datum.value }
     }
   }
+
+  function getNonEmptySplittedStrings(s: string, splitter: RegExp): string[] { return s.split(splitter).filter(line => line.trim() !== '') }
 }
 
 module.exports = {
