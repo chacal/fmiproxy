@@ -1,11 +1,10 @@
 import Victor = require('victor')
 import moment = require('moment')
 const utils = require('./utils')
-import { Forecast, ForecastItem } from './ForecastDomain'
-import * as L from 'partial.lenses'
+import { PointForecast, ForecastItem } from './ForecastDomain'
 import R from './RamdaExt'
 
-function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0): Forecast {
+function getPointForecastFromGrib(gribPath, latitude, longitude, startTime = 0): PointForecast {
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
     .then(parseForecastTimeAndItems)
     .then(forecast => utils.removeOlderForecastItems(forecast, startTime))
@@ -15,7 +14,7 @@ function getForecastItemsFromGrib(gribPath, latitude, longitude, startTime = 0):
 /*
   For forecast format see ForecastItem
  */
-function parseForecastTimeAndItems(gribGetOutput: string): Forecast {
+function parseForecastTimeAndItems(gribGetOutput: string): PointForecast {
   const lines = getNonEmptySplittedStrings(gribGetOutput, /\n/)
   const rawGribData: RawGribDatum[] = lines.map(parseGribLine)
   const gribDataGroupedByTime: RawGribDatum[][] = R.pipe(R.groupBy(R.prop('time')), R.values)(rawGribData)
@@ -72,5 +71,5 @@ function parseForecastTimeAndItems(gribGetOutput: string): Forecast {
 }
 
 module.exports = {
-  getForecastItemsFromGrib: getForecastItemsFromGrib
+  getPointForecastFromGrib
 }

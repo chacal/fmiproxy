@@ -43,7 +43,7 @@ function startServer() {
         next(e)
       }
     } else if(req.query.lat && req.query.lon) {
-      gribParser.getForecastItemsFromGrib(gribDownloader.gribFile, req.query.lat, req.query.lon, req.query.startTime)
+      gribParser.getPointForecastFromGrib(gribDownloader.gribFile, req.query.lat, req.query.lon, req.query.startTime)
         .then(function(forecast) { res.json(forecast).end() })
         .catch(next)
     } else {

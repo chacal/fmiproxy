@@ -1,4 +1,4 @@
-import {ForecastItem, Forecast} from "./ForecastDomain"
+import {ForecastItem, PointForecast} from "./ForecastDomain"
 var BPromise = require('bluebird')
 var request = BPromise.promisifyAll(require('request'))
 var xml2js = BPromise.promisifyAll(require('xml2js'))
@@ -60,7 +60,7 @@ function parseHourlyTimestampFromGribItemDateAndTime(date, time) {
   return moment(date + time + '+0000', 'YYYYMMDDHHZ')
 }
 
-function removeOlderForecastItems(forecast: Forecast, time: Date): Forecast {
+function removeOlderForecastItems(forecast: PointForecast, time: Date): PointForecast {
   return L.remove(['forecastItems', L.elems, L.when(isItemBeforeStartTime)], forecast)
 
   function isItemBeforeStartTime(item: ForecastItem) {

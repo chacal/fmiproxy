@@ -1,3 +1,4 @@
+import {ForecastItem} from "./ForecastDomain"
 var gribGet = require('./utils').grib_get
 var _ = require('lodash')
 var BPromise = require('bluebird')
@@ -7,7 +8,7 @@ var geolib = require('geolib')
 var moment = require('moment')
 var logger = require('./logging.js').console
 var utils = require('./utils.js')
-
+import * as L from 'partial.lenses'
 
 var CPU_COUNT = require('os').cpus().length
 var LAT_GRID_INCREMENT = 0.2
@@ -24,11 +25,15 @@ function getForecasts(bounds, startTime) {
     {latitude: bounds.neCorner.lat, longitude: bounds.neCorner.lng},
     {latitude: bounds.swCorner.lat, longitude: bounds.neCorner.lng}
   ]
-  var forecastsInBounds = _.filter(cachedForecasts, function(forecast) {
-    return geolib.isPointInside({ latitude: forecast.lat, longitude: forecast.lng }, corners)
-  })
-  const forecast = { forecastTime: gribTimestamp, forecastItems: forecastsInBounds }
-  return utils.removeOlderForecastItems(forecast, startTime)
+
+  const forecastsInBounds = L.collect([L.elems, L.when(forecastInBounds(corners))], cachedForecasts)
+  const forecasts = { forecastTime: gribTimestamp, forecastItems: forecastsInBounds }
+
+  return utils.removeOlderForecastItems(forecasts, startTime)
+
+  function forecastInBounds(corners: {latitude: number, longitude: number}[]): (any) => boolean {
+    return forecast => geolib.isPointInside({ latitude: forecast.lat, longitude: forecast.lng }, corners)
+  }
 }
 
 function refreshFrom(gribFile) {
@@ -38,15 +43,15 @@ function refreshFrom(gribFile) {
     .tap(function(timestamp) { gribTimestamp = timestamp })
     .then(function() { return getGribBounds(gribFile) })
     .then(function(bounds) { return createForecastLocations(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT) })
-    .then(function(forecastLocations) { return getForecastsFromGrib(forecastLocations, gribFile) })
+    .then(function(forecastLocations) { return getPointForecastsForLocations(forecastLocations, gribFile) })
     .then(function(forecasts) { cachedForecasts = forecasts })
     .then(function() { logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecasts.length + ' points.')})
 }
 
 
-function getForecastsFromGrib(locations, gribFile) {
+function getPointForecastsForLocations(locations, gribFile) {
   return BPromise.map(locations, function(location) {
-    return gribParser.getForecastItemsFromGrib(gribFile, location.lat, location.lng)
+    return gribParser.getPointForecastFromGrib(gribFile, location.lat, location.lng)
       .then(function(forecast) { return _.extend(location, { items: forecast.forecastItems }) })
   }, { concurrency: CPU_COUNT })
 }

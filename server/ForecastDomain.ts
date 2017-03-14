@@ -1,4 +1,4 @@
-export interface Forecast {
+export interface PointForecast {
   publishTime: Date,
   forecastItems: ForecastItem[]
 }
