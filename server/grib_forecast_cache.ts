@@ -70,11 +70,11 @@ function createForecastLocations(bounds, latIncrement, lngIncrement): Coords[] {
   return forecastLocations
 }
 
-function getGribBounds(gribFile) {
+function getGribBounds(gribFile): Bounds {
   return gribGet(['-p', 'latitudeOfFirstGridPointInDegrees,longitudeOfFirstGridPointInDegrees,latitudeOfLastGridPointInDegrees,longitudeOfLastGridPointInDegrees', gribFile])
-    .then(function(output) { return output.split('\n')[0] })
-    .then(function(line) {
-      var coords = _.map(line.trim().split(/ /), parseFloat)
+    .then(output => output.split('\n')[0])
+    .then(line => {
+      const coords = line.trim().split(/ /).map(parseFloat)
       return { swCorner: { lat: coords[0], lng: coords[1] }, neCorner: { lat: coords[2], lng: coords[3] }}
     })
 }
