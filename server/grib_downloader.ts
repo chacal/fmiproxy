@@ -8,7 +8,7 @@ var moment = require('moment')
 var utils = require('./utils')
 var logger = require('./logging.js').console
 
-var gribCache = require('./grib_forecast_cache')
+import * as GribCache from './grib_forecast_cache'
 
 var gribDir = __dirname + '/../gribs'
 var latestGrib = gribDir + '/latest.grb'
@@ -19,7 +19,7 @@ function initDownloader(apiKey) {
 
   return mkdirp(gribDir)
     .then(updateGribIfNeeded)
-    .then(function(gribUpdated) { if(!gribUpdated) gribCache.refreshFrom(latestGrib) })  // No new grib downloaded -> need to refresh cache manually
+    .then(function(gribUpdated) { if(!gribUpdated) GribCache.refreshFrom(latestGrib) })  // No new grib downloaded -> need to refresh cache manually
     .then(function() {
       scheduleGribUpdates() // Intentionally no 'return' here to launch the grib updates to the background
     })
@@ -49,7 +49,7 @@ function initDownloader(apiKey) {
   }
 
   function getLatestDownloadedGribTimestamp() {
-    return gribCache.getGribTimestamp(latestGrib)
+    return GribCache.getGribTimestamp(latestGrib)
   }
 
   function getLatestPublishedGribTimestamp() {
@@ -76,7 +76,7 @@ function initDownloader(apiKey) {
               return fs.renameAsync(latestGrib + '.tmp', latestGrib)
             })
             .then(function() { logger.info('Successfully downloaded new grib file! (' + gribFileBuffer.length + ' bytes)') })
-            .then(function() { gribCache.refreshFrom(latestGrib) })
+            .then(function() { GribCache.refreshFrom(latestGrib) })
         }
       })
   }

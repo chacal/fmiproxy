@@ -1,8 +1,9 @@
-import {ForecastItem, PointForecast, Coords, AreaForecast, Bounds} from "./ForecastDomain"
+import {PointForecast, Coords, AreaForecast, Bounds} from "./ForecastDomain"
 var gribGet = require('./utils').grib_get
 import _ = require('lodash')
 import * as BPromise from 'bluebird'
-var fs = BPromise.promisifyAll(require('fs'))
+import * as fs from 'fs'
+const accessAsync = BPromise.promisify<void, string, number>(fs.access)
 var gribParser = require('./grib_get_parser')
 var geolib = require('geolib')
 var moment = require('moment')
@@ -39,7 +40,7 @@ export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): 
   }
 }
 
-function refreshFrom(gribFile) {
+export function refreshFrom(gribFile) {
   var startTime = new Date()
   logger.info('Refreshing forecast cache..')
   return getGribTimestamp(gribFile)
@@ -78,29 +79,18 @@ function getGribBounds(gribFile) {
     })
 }
 
-function getGribTimestamp(gribFile) {
-  return fs.statAsync(gribFile)
-    .then(function() {
-      return gribGet(['-p', 'dataDate,dataTime', gribFile])
-    })
-    .then(function(output) {
-      var parts = output.split(/\n/)[0].split(/ /)
-      var dataDate = parts[0]
-      var dataTime = parts[1]
+export function getGribTimestamp(gribFile: string): Bluebird<Date> {
+  return accessAsync(gribFile, fs.constants.R_OK)
+    .then(() => gribGet(['-p', 'dataDate,dataTime', gribFile]))
+    .then(output => {
+      const parts = output.split(/\n/)[0].split(/ /)
+      const dataDate = parts[0]
+      const dataTime = parts[1]
       return utils.parseHourlyTimestampFromGribItemDateAndTime(dataDate, dataTime).toDate()
     })
-    .catch(function() {
-      return undefined
-    })
-
+    .catch(() => undefined)
 }
 
 function roundTo1Decimal(num) {
   return Math.round( num * 10 ) / 10
-}
-
-module.exports = {
-  refreshFrom: refreshFrom,
-  getAreaForecast,
-  getGribTimestamp: getGribTimestamp
 }
