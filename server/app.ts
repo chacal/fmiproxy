@@ -12,7 +12,7 @@ var geocode = require('./reverse_geocode.js')
 var gribParser = require('./grib_get_parser.js')
 var observations = require('./observations.js')(FMIAPIKey)
 var gribDownloader = require('./grib_downloader.js')
-var forecastCache = require('./grib_forecast_cache.js')
+import * as ForecastCache from './grib_forecast_cache.js'
 
 var app = express()
 app.set('port', (process.env.PORT || 8000))
@@ -38,7 +38,7 @@ function startServer() {
     } else if(req.query.bounds) {
       try {
         var coords = _.map(req.query.bounds.trim().split(','), parseFloat)
-        res.json(forecastCache.getAreaForecast({ swCorner: { lat: coords[0], lng: coords[1] }, neCorner: { lat: coords[2], lng: coords[3] } }, req.query.startTime))
+        res.json(ForecastCache.getAreaForecast({ swCorner: { lat: coords[0], lng: coords[1] }, neCorner: { lat: coords[2], lng: coords[3] } }, req.query.startTime))
       } catch (e) {
         next(e)
       }

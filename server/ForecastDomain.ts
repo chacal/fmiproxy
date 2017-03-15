@@ -18,6 +18,11 @@ export interface ForecastItem {
   time: Date
 }
 
+export interface Bounds {
+  swCorner: Coords,
+  neCorner: Coords
+}
+
 export interface Coords {
   lat: number,
   lng: number

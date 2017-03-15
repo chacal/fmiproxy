@@ -1,4 +1,4 @@
-import {ForecastItem, PointForecast, Coords, AreaForecast} from "./ForecastDomain"
+import {ForecastItem, PointForecast, Coords, AreaForecast, Bounds} from "./ForecastDomain"
 var gribGet = require('./utils').grib_get
 import _ = require('lodash')
 import * as BPromise from 'bluebird'
@@ -18,8 +18,7 @@ let cachedForecasts: PointForecast[] = []
 var gribTimestamp = undefined
 
 
-function getAreaForecast(bounds, startTime): AreaForecast {
-  var startTime = moment(startTime || 0)
+export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): AreaForecast {
   const corners = [
     {lat: bounds.swCorner.lat, lng: bounds.swCorner.lng},
     {lat: bounds.neCorner.lat, lng: bounds.swCorner.lng},
