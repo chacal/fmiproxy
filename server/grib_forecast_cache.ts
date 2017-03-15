@@ -1,15 +1,14 @@
 import {PointForecast, Coords, AreaForecast, Bounds} from "./ForecastDomain"
 var gribGet = require('./utils').grib_get
 import _ = require('lodash')
-import * as BPromise from 'bluebird'
+import Bluebird = require("bluebird")
 import * as fs from 'fs'
-const accessAsync = BPromise.promisify<void, string, number>(fs.access)
+const accessAsync = Bluebird.promisify<void, string, number>(fs.access)
 var gribParser = require('./grib_get_parser')
 var geolib = require('geolib')
 var moment = require('moment')
 var logger = require('./logging.js').console
 import utils = require('./utils.js')
-import Bluebird = require("bluebird")
 
 var CPU_COUNT = require('os').cpus().length
 var LAT_GRID_INCREMENT = 0.2
@@ -54,7 +53,7 @@ export function refreshFrom(gribFile) {
 
 
 function getPointForecastsForLocations(locations: Coords[], gribFile: string): Bluebird<PointForecast[]> {
-  return BPromise.map(locations, location => gribParser.getPointForecastFromGrib(gribFile, location.lat, location.lng), { concurrency: CPU_COUNT })
+  return Bluebird.map(locations, location => gribParser.getPointForecastFromGrib(gribFile, location.lat, location.lng), { concurrency: CPU_COUNT })
 }
 
 function createForecastLocations(bounds, latIncrement, lngIncrement): Coords[] {
