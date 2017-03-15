@@ -12,7 +12,7 @@ var geocode = require('./reverse_geocode.js')
 var gribParser = require('./grib_get_parser.js')
 var observations = require('./observations.js')(FMIAPIKey)
 var gribDownloader = require('./grib_downloader.js')
-import * as ForecastCache from './grib_forecast_cache.js'
+import * as ForecastCache from './grib_forecast_cache'
 
 var app = express()
 app.set('port', (process.env.PORT || 8000))

@@ -5,7 +5,7 @@ var xml2js = BPromise.promisifyAll(require('xml2js'))
 var child_process = require('child_process')
 var _ = require('lodash')
 var moment = require('moment')
-import * as L from 'partial.lenses'
+import L = require('partial.lenses')
 
 function grib_get(params) {
   return new BPromise(function (resolve, reject) {

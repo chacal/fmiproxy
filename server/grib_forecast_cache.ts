@@ -2,13 +2,13 @@ import {PointForecast, Coords, AreaForecast, Bounds} from "./ForecastDomain"
 var gribGet = require('./utils').grib_get
 import _ = require('lodash')
 import Bluebird = require("bluebird")
-import * as fs from 'fs'
+import fs = require('fs')
 const accessAsync = Bluebird.promisify<void, string, number>(fs.access)
 var gribParser = require('./grib_get_parser')
 var geolib = require('geolib')
 var moment = require('moment')
 var logger = require('./logging.js').console
-import utils = require('./utils.js')
+import utils = require('./utils')
 
 var CPU_COUNT = require('os').cpus().length
 var LAT_GRID_INCREMENT = 0.2

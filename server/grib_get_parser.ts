@@ -2,7 +2,7 @@ import Victor = require('victor')
 import moment = require('moment')
 const utils = require('./utils')
 import { PointForecast, ForecastItem } from './ForecastDomain'
-import * as R from 'ramda'
+import R = require('ramda')
 
 function getPointForecastFromGrib(gribPath: string, latitude: number, longitude: number, startTime: Date = new Date(0)): PointForecast {
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
