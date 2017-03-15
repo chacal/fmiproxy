@@ -36,7 +36,7 @@ export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): 
   }
 
   function forecastInBounds(corners: Coords[]): (PointForecast) => boolean {
-    return forecast => geolib.isPointInside({ latitude: forecast.lat, longitude: forecast.lng }, corners)
+    return forecast => geolib.isPointInside({latitude: forecast.lat, longitude: forecast.lng}, corners)
   }
 }
 
@@ -54,14 +54,14 @@ export function refreshFrom(gribFile) {
 
 
 function getPointForecastsForLocations(locations: Coords[], gribFile: string): Bluebird<PointForecast[]> {
-  return Bluebird.map(locations, location => gribParser.getPointForecastFromGrib(gribFile, location.lat, location.lng), { concurrency: CPU_COUNT })
+  return Bluebird.map(locations, location => gribParser.getPointForecastFromGrib(gribFile, location.lat, location.lng), {concurrency: CPU_COUNT})
 }
 
 function createForecastLocations(bounds, latIncrement, lngIncrement): Coords[] {
   const latitudes = utils.rangeStep(bounds.swCorner.lat, bounds.neCorner.lat, latIncrement).map(roundTo1Decimal)
   const longitudes = utils.rangeStep(bounds.swCorner.lng, bounds.neCorner.lng, lngIncrement).map(roundTo1Decimal)
 
-  return R.flatten<Coords>(latitudes.map(lat => longitudes.map(lng => ({ lat, lng }))))
+  return R.flatten<Coords>(latitudes.map(lat => longitudes.map(lng => ({lat, lng}))))
 }
 
 function getGribBounds(gribFile): Bounds {
@@ -69,7 +69,7 @@ function getGribBounds(gribFile): Bounds {
     .then(output => output.split('\n')[0])
     .then(line => {
       const coords = line.trim().split(/ /).map(parseFloat)
-      return { swCorner: { lat: coords[0], lng: coords[1] }, neCorner: { lat: coords[2], lng: coords[3] }}
+      return {swCorner: {lat: coords[0], lng: coords[1]}, neCorner: {lat: coords[2], lng: coords[3]}}
     })
 }
 
@@ -86,5 +86,5 @@ export function getGribTimestamp(gribFile: string): Bluebird<Date> {
 }
 
 function roundTo1Decimal(num) {
-  return Math.round( num * 10 ) / 10
+  return Math.round(num * 10) / 10
 }
