@@ -1,4 +1,4 @@
-import {PointForecast, Coords, AreaForecast, Bounds} from "./ForecastDomain"
+import {PointForecast, Coords, AreaForecast, Bounds, ForecastItem} from "./ForecastDomain"
 var gribGet = require('./utils').grib_get
 import _ = require('lodash')
 import Bluebird = require("bluebird")
@@ -10,12 +10,12 @@ var moment = require('moment')
 var logger = require('./logging.js').console
 import utils = require('./utils')
 import R = require('ramda')
+import L = require('partial.lenses')
 
 var CPU_COUNT = require('os').cpus().length
 var LAT_GRID_INCREMENT = 0.2
 var LNG_GRID_INCREMENT = 0.5
-let cachedForecasts: PointForecast[] = []
-var gribTimestamp = undefined
+let cachedForecast: AreaForecast
 
 
 export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): AreaForecast {
@@ -26,30 +26,31 @@ export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): 
     {lat: bounds.swCorner.lat, lng: bounds.neCorner.lng}
   ]
 
-  const forecastsInBoundsFilteredByTime = cachedForecasts
-    .filter(forecastInBounds(corners))
-    .map(forecast => utils.removeOlderForecastItems(forecast, startTime))
+  const filterForecastsNotInBounds = (corners: Coords[]) => L.filter(forecastNotInBounds(corners))
+  const filterOlderForecastItems = (time: Date) => [L.elems, 'forecastItems', L.filter(isItemBefore(time))]
 
-  return {
-    publishTime: gribTimestamp,
-    pointForecasts: forecastsInBoundsFilteredByTime
+  return L.remove(['pointForecasts', L.seq(filterForecastsNotInBounds(corners), filterOlderForecastItems(startTime))], cachedForecast)
+
+
+  function isItemBefore(time: Date) {
+    return (item: ForecastItem) => moment(item.time).isBefore(moment(time))
   }
 
-  function forecastInBounds(corners: Coords[]): (PointForecast) => boolean {
-    return forecast => geolib.isPointInside({latitude: forecast.lat, longitude: forecast.lng}, corners)
+  function forecastNotInBounds(corners: Coords[]): (PointForecast) => boolean {
+    return forecast => ! geolib.isPointInside({latitude: forecast.lat, longitude: forecast.lng}, corners)
   }
 }
 
-export function refreshFrom(gribFile) {
-  var startTime = new Date()
+export function refreshFrom(gribFile: string): Bluebird<void> {
+  const startTime = new Date()
   logger.info('Refreshing forecast cache..')
   return getGribTimestamp(gribFile)
-    .tap(function(timestamp) { gribTimestamp = timestamp })
-    .then(function() { return getGribBounds(gribFile) })
-    .then(function(bounds) { return createForecastLocations(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT) })
-    .then(function(forecastLocations) { return getPointForecastsForLocations(forecastLocations, gribFile) })
-    .then(function(forecasts) { cachedForecasts = forecasts })
-    .then(function() { logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecasts.length + ' points.')})
+    .then(timestamp => getGribBounds(gribFile)
+      .then(bounds => createForecastLocations(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT))
+      .then(forecastLocations => getPointForecastsForLocations(forecastLocations, gribFile))
+      .then(pointForecasts => { cachedForecast = { publishTime: timestamp, pointForecasts } })
+      .then(function() { logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecast.pointForecasts.length + ' points.')})
+    )
 }
 
 
@@ -64,7 +65,8 @@ function createForecastLocations(bounds, latIncrement, lngIncrement): Coords[] {
   return R.flatten<Coords>(latitudes.map(lat => longitudes.map(lng => ({lat, lng}))))
 }
 
-function getGribBounds(gribFile): Bounds {
+function getGribBounds(gribFile: string): Bluebird<Bounds> {
+  // TODO: Type gribGet properly
   return gribGet(['-p', 'latitudeOfFirstGridPointInDegrees,longitudeOfFirstGridPointInDegrees,latitudeOfLastGridPointInDegrees,longitudeOfLastGridPointInDegrees', gribFile])
     .then(output => output.split('\n')[0])
     .then(line => {
