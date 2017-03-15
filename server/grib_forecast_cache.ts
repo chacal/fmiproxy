@@ -1,37 +1,36 @@
-import {ForecastItem} from "./ForecastDomain"
+import {ForecastItem, PointForecast, Coords} from "./ForecastDomain"
 var gribGet = require('./utils').grib_get
-var _ = require('lodash')
-var BPromise = require('bluebird')
+import _ = require('lodash')
+import * as BPromise from 'bluebird'
 var fs = BPromise.promisifyAll(require('fs'))
 var gribParser = require('./grib_get_parser')
 var geolib = require('geolib')
 var moment = require('moment')
 var logger = require('./logging.js').console
-var utils = require('./utils.js')
+import utils = require('./utils.js')
 import * as L from 'partial.lenses'
+import Bluebird = require("bluebird")
 
 var CPU_COUNT = require('os').cpus().length
 var LAT_GRID_INCREMENT = 0.2
 var LNG_GRID_INCREMENT = 0.5
-var cachedForecasts = []
+let cachedForecasts: PointForecast[] = []
 var gribTimestamp = undefined
 
 
 function getForecasts(bounds, startTime) {
   var startTime = moment(startTime || 0)
-  var corners = [
-    {latitude: bounds.swCorner.lat, longitude: bounds.swCorner.lng},
-    {latitude: bounds.neCorner.lat, longitude: bounds.swCorner.lng},
-    {latitude: bounds.neCorner.lat, longitude: bounds.neCorner.lng},
-    {latitude: bounds.swCorner.lat, longitude: bounds.neCorner.lng}
+  const corners = [
+    {lat: bounds.swCorner.lat, lng: bounds.swCorner.lng},
+    {lat: bounds.neCorner.lat, lng: bounds.swCorner.lng},
+    {lat: bounds.neCorner.lat, lng: bounds.neCorner.lng},
+    {lat: bounds.swCorner.lat, lng: bounds.neCorner.lng}
   ]
 
   const forecastsInBounds = L.collect([L.elems, L.when(forecastInBounds(corners))], cachedForecasts)
-  const forecasts = { forecastTime: gribTimestamp, forecastItems: forecastsInBounds }
+  return { forecastTime: gribTimestamp, forecastItems: forecastsInBounds.map(forecast => utils.removeOlderForecastItems(forecast, startTime)) }
 
-  return utils.removeOlderForecastItems(forecasts, startTime)
-
-  function forecastInBounds(corners: {latitude: number, longitude: number}[]): (any) => boolean {
+  function forecastInBounds(corners: Coords[]): (PointForecast) => boolean {
     return forecast => geolib.isPointInside({ latitude: forecast.lat, longitude: forecast.lng }, corners)
   }
 }
@@ -49,14 +48,11 @@ function refreshFrom(gribFile) {
 }
 
 
-function getPointForecastsForLocations(locations, gribFile) {
-  return BPromise.map(locations, function(location) {
-    return gribParser.getPointForecastFromGrib(gribFile, location.lat, location.lng)
-      .then(function(forecast) { return _.extend(location, { items: forecast.forecastItems }) })
-  }, { concurrency: CPU_COUNT })
+function getPointForecastsForLocations(locations: Coords[], gribFile: string): Bluebird<PointForecast[]> {
+  return BPromise.map(locations, location => gribParser.getPointForecastFromGrib(gribFile, location.lat, location.lng), { concurrency: CPU_COUNT })
 }
 
-function createForecastLocations(bounds, latIncrement, lngIncrement) {
+function createForecastLocations(bounds, latIncrement, lngIncrement): Coords[] {
   var forecastLocations = []
   var latitudes = _.map(_.range(bounds.swCorner.lat, bounds.neCorner.lat, latIncrement), roundTo1Decimal)
   var longitudes = _.map(_.range(bounds.swCorner.lng, bounds.neCorner.lng, lngIncrement), roundTo1Decimal)

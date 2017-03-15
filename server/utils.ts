@@ -52,7 +52,7 @@ function locationFromPositionString(position) {
   return { latitude: parseFloat(latitude), longitude: parseFloat(longitude) }
 }
 
-function parseHourlyTimestampFromGribItemDateAndTime(date, time) {
+export function parseHourlyTimestampFromGribItemDateAndTime(date, time) {
   // Return timestamp with one hour precision (ignores minutes)
   // Works correctly for time inputs: '0', '12', '600', '1600', '1230'
   // Assumes that the date & time are given in GMT time zone
@@ -60,7 +60,7 @@ function parseHourlyTimestampFromGribItemDateAndTime(date, time) {
   return moment(date + time + '+0000', 'YYYYMMDDHHZ')
 }
 
-function removeOlderForecastItems(forecast: PointForecast, time: Date): PointForecast {
+export function removeOlderForecastItems(forecast: PointForecast, time: Date): PointForecast {
   return L.remove(['forecastItems', L.elems, L.when(isItemBeforeStartTime)], forecast)
 
   function isItemBeforeStartTime(item: ForecastItem) {
@@ -74,6 +74,6 @@ module.exports = {
   getStationInfoFromGmlPoint: getStationInfoFromGmlPoint,
   getGeoidFromGridSeriesObservation: getGeoidFromGridSeriesObservation,
   locationFromPositionString: locationFromPositionString,
-  parseHourlyTimestampFromGribItemDateAndTime: parseHourlyTimestampFromGribItemDateAndTime,
+  parseHourlyTimestampFromGribItemDateAndTime,
   removeOlderForecastItems
 }

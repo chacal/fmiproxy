@@ -6,7 +6,7 @@ import * as R from 'ramda'
 
 function getPointForecastFromGrib(gribPath, latitude, longitude, startTime = 0): PointForecast {
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
-    .then(parseForecastTimeAndItems)
+    .then(stdout => parseForecastTimeAndItems(stdout, latitude, longitude))
     .then(forecast => utils.removeOlderForecastItems(forecast, startTime))
 }
 
@@ -14,14 +14,14 @@ function getPointForecastFromGrib(gribPath, latitude, longitude, startTime = 0):
 /*
   For forecast format see ForecastItem
  */
-function parseForecastTimeAndItems(gribGetOutput: string): PointForecast {
+function parseForecastTimeAndItems(gribGetOutput: string, lat: number, lng: number): PointForecast {
   const lines = getNonEmptySplittedStrings(gribGetOutput, /\n/)
   const rawGribData: RawGribDatum[] = lines.map(parseGribLine)
   const gribDataGroupedByTime: RawGribDatum[][] = R.pipe(R.groupBy(R.prop('time')), R.values)(rawGribData)
   const forecastItems = gribDataGroupedByTime.map(createForecastItem)
   const sortedForecastItems = R.sortBy(item => item.time, forecastItems)
 
-  return { publishTime: sortedForecastItems[0].time, forecastItems: sortedForecastItems }
+  return { publishTime: sortedForecastItems[0].time, lat, lng, forecastItems: sortedForecastItems }
 
 
   interface RawGribDatum {
