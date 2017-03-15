@@ -26,18 +26,21 @@ export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): 
     {lat: bounds.swCorner.lat, lng: bounds.neCorner.lng}
   ]
 
-  const filterForecastsNotInBounds = (corners: Coords[]) => L.filter(forecastNotInBounds(corners))
-  const filterOlderForecastItems = (time: Date) => [L.elems, 'forecastItems', L.filter(isItemBefore(time))]
-
-  return L.remove(['pointForecasts', L.seq(filterForecastsNotInBounds(corners), filterOlderForecastItems(startTime))], cachedForecast)
+  return L.remove(['pointForecasts',
+      L.elems,
+      L.choose(forecast => forecastInBounds(forecast, corners)
+        ? ['forecastItems', L.elems, L.when(isItemBefore(startTime))]  // PointForecast in bounds -> filter items by time
+        : []                                                           // PointForecast out of bounds -> remove it itself
+      )],
+    cachedForecast)
 
 
   function isItemBefore(time: Date) {
     return (item: ForecastItem) => moment(item.time).isBefore(moment(time))
   }
 
-  function forecastNotInBounds(corners: Coords[]): (PointForecast) => boolean {
-    return forecast => ! geolib.isPointInside({latitude: forecast.lat, longitude: forecast.lng}, corners)
+  function forecastInBounds(forecast: PointForecast, corners: Coords[]): boolean {
+    return geolib.isPointInside({latitude: forecast.lat, longitude: forecast.lng}, corners)
   }
 }
 
