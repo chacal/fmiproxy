@@ -8,7 +8,6 @@ var geolib = require('geolib')
 var moment = require('moment')
 var logger = require('./logging.js').console
 import utils = require('./utils.js')
-import * as L from 'partial.lenses'
 import Bluebird = require("bluebird")
 
 var CPU_COUNT = require('os').cpus().length
@@ -26,12 +25,13 @@ export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): 
     {lat: bounds.swCorner.lat, lng: bounds.neCorner.lng}
   ]
 
-  const forecastsInBounds = L.collect([L.elems, L.when(forecastInBounds(corners))], cachedForecasts)
-  const forecastsFilteredByTime = forecastsInBounds.map(forecast => utils.removeOlderForecastItems(forecast, startTime))
+  const forecastsInBoundsFilteredByTime = cachedForecasts
+    .filter(forecastInBounds(corners))
+    .map(forecast => utils.removeOlderForecastItems(forecast, startTime))
 
   return {
     publishTime: gribTimestamp,
-    pointForecasts: forecastsFilteredByTime
+    pointForecasts: forecastsInBoundsFilteredByTime
   }
 
   function forecastInBounds(corners: Coords[]): (PointForecast) => boolean {
