@@ -9,6 +9,7 @@ var geolib = require('geolib')
 var moment = require('moment')
 var logger = require('./logging.js').console
 import utils = require('./utils')
+import R = require('ramda')
 
 var CPU_COUNT = require('os').cpus().length
 var LAT_GRID_INCREMENT = 0.2
@@ -57,16 +58,10 @@ function getPointForecastsForLocations(locations: Coords[], gribFile: string): B
 }
 
 function createForecastLocations(bounds, latIncrement, lngIncrement): Coords[] {
-  var forecastLocations = []
-  var latitudes = _.map(_.range(bounds.swCorner.lat, bounds.neCorner.lat, latIncrement), roundTo1Decimal)
-  var longitudes = _.map(_.range(bounds.swCorner.lng, bounds.neCorner.lng, lngIncrement), roundTo1Decimal)
+  const latitudes = utils.rangeStep(bounds.swCorner.lat, bounds.neCorner.lat, latIncrement).map(roundTo1Decimal)
+  const longitudes = utils.rangeStep(bounds.swCorner.lng, bounds.neCorner.lng, lngIncrement).map(roundTo1Decimal)
 
-  latitudes.forEach(function(lat) {
-    longitudes.forEach(function(lng) {
-      forecastLocations.push({lat: lat, lng: lng})
-    })
-  })
-  return forecastLocations
+  return R.flatten<Coords>(latitudes.map(lat => longitudes.map(lng => ({ lat, lng }))))
 }
 
 function getGribBounds(gribFile): Bounds {

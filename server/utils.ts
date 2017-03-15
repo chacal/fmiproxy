@@ -6,6 +6,7 @@ var child_process = require('child_process')
 var _ = require('lodash')
 var moment = require('moment')
 import L = require('partial.lenses')
+import R = require('ramda')
 
 function grib_get(params) {
   return new BPromise(function (resolve, reject) {
@@ -68,6 +69,14 @@ export function removeOlderForecastItems(forecast: PointForecast, time: Date): P
   }
 }
 
+export function rangeStep(start: number, stop: number, step: number = 1): number[] {
+  return R.map(
+    n => start + step * n,
+    R.range(0, (1 + (stop - start) / step) >>> 0)
+  )
+}
+
+
 module.exports = {
   grib_get: grib_get,
   getFmiXMLasJson: getFmiXMLasJson,
@@ -75,5 +84,6 @@ module.exports = {
   getGeoidFromGridSeriesObservation: getGeoidFromGridSeriesObservation,
   locationFromPositionString: locationFromPositionString,
   parseHourlyTimestampFromGribItemDateAndTime,
-  removeOlderForecastItems
+  removeOlderForecastItems,
+  rangeStep
 }
