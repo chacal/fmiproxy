@@ -1,3 +1,8 @@
+export interface AreaForecast {
+  publishTime: Date,
+  pointForecasts: PointForecast[]
+}
+
 export interface PointForecast {
   publishTime: Date,
   lat: number,

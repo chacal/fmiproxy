@@ -1,4 +1,4 @@
-import {ForecastItem, PointForecast, Coords} from "./ForecastDomain"
+import {ForecastItem, PointForecast, Coords, AreaForecast} from "./ForecastDomain"
 var gribGet = require('./utils').grib_get
 import _ = require('lodash')
 import * as BPromise from 'bluebird'
@@ -18,7 +18,7 @@ let cachedForecasts: PointForecast[] = []
 var gribTimestamp = undefined
 
 
-function getForecasts(bounds, startTime) {
+function getAreaForecast(bounds, startTime): AreaForecast {
   var startTime = moment(startTime || 0)
   const corners = [
     {lat: bounds.swCorner.lat, lng: bounds.swCorner.lng},
@@ -28,7 +28,12 @@ function getForecasts(bounds, startTime) {
   ]
 
   const forecastsInBounds = L.collect([L.elems, L.when(forecastInBounds(corners))], cachedForecasts)
-  return { forecastTime: gribTimestamp, forecastItems: forecastsInBounds.map(forecast => utils.removeOlderForecastItems(forecast, startTime)) }
+  const forecastsFilteredByTime = forecastsInBounds.map(forecast => utils.removeOlderForecastItems(forecast, startTime))
+
+  return {
+    publishTime: gribTimestamp,
+    pointForecasts: forecastsFilteredByTime
+  }
 
   function forecastInBounds(corners: Coords[]): (PointForecast) => boolean {
     return forecast => geolib.isPointInside({ latitude: forecast.lat, longitude: forecast.lng }, corners)
@@ -97,6 +102,6 @@ function roundTo1Decimal(num) {
 
 module.exports = {
   refreshFrom: refreshFrom,
-  getForecasts: getForecasts,
+  getAreaForecast,
   getGribTimestamp: getGribTimestamp
 }
