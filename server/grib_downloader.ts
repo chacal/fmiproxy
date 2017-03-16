@@ -1,7 +1,7 @@
 import Bluebird = require('bluebird')
 import requestP = require('request-promise')
 import fsExtraP = require('fs-extra-promise')
-var _ = require('lodash')
+import L = require('partial.lenses')
 var moment = require('moment')
 var utils = require('./utils')
 var logger = require('./logging.js').console
@@ -50,12 +50,20 @@ function initDownloader(apiKey) {
     return GribCache.getGribTimestamp(latestGrib)
   }
 
-  function getLatestPublishedGribTimestamp() {
-    var gribMetadataUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
+  function getLatestPublishedGribTimestamp(): Bluebird<Date> {
+    const gribMetadataUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
     return utils.getFmiXMLasJson(gribMetadataUrl)
-      .then(function(json) {
-        var latestGribMetadata = _.last(_.get(json, 'wfs:FeatureCollection.wfs:member'))
-        return new Date(_.get(latestGribMetadata, 'omso:GridSeriesObservation[0].om:resultTime[0].gml:TimeInstant[0].gml:timePosition[0]'))
+      .then(json => {
+        const last = L.choose(arr => L.index(arr.length - 1))
+
+        const latestGribDate = L.get([
+          'wfs:FeatureCollection', 'wfs:member', last,
+          'omso:GridSeriesObservation', 0,
+          'om:resultTime', 0,
+          'gml:TimeInstant', 0,
+          'gml:timePosition', 0
+        ], json)
+        return new Date(latestGribDate)
       })
   }
 
