@@ -1,6 +1,6 @@
 var Bluebird = require('bluebird')
 var fs = Bluebird.promisifyAll(require('fs'))
-var request = Bluebird.promisifyAll(require('request'))
+import requestP = require('request-promise')
 var xml2js = Bluebird.promisifyAll(require('xml2js'))
 var mkdirp = Bluebird.promisify(require('mkdirp'));
 var _ = require('lodash')
@@ -64,7 +64,7 @@ function initDownloader(apiKey) {
   function downloadLatestGrib() {
     var gribUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
     logger.info("Downloading latest HIRLAM grib..")
-    return request.getAsync(gribUrl, { encoding: null })
+    return requestP.get(gribUrl, { encoding: null })
       .then(function(res) {
         var gribFileBuffer = res.body
         if(gribFileBuffer.length === 0) {
