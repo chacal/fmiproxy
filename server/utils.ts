@@ -27,7 +27,7 @@ function grib_get(params) {
   })
 }
 
-function getFmiXMLasJson(url) {
+export function getFmiXMLasJson(url) {
   return request.getAsync(url)
     .then(function(res) {
       return xml2js.parseStringAsync(res.body)
@@ -79,7 +79,7 @@ export function rangeStep(start: number, stop: number, step: number = 1): number
 
 module.exports = {
   grib_get: grib_get,
-  getFmiXMLasJson: getFmiXMLasJson,
+  getFmiXMLasJson,
   getStationInfoFromGmlPoint: getStationInfoFromGmlPoint,
   getGeoidFromGridSeriesObservation: getGeoidFromGridSeriesObservation,
   locationFromPositionString: locationFromPositionString,

@@ -2,43 +2,40 @@ import Bluebird = require('bluebird')
 import requestP = require('request-promise')
 import fsExtraP = require('fs-extra-promise')
 import L = require('partial.lenses')
-var moment = require('moment')
-var utils = require('./utils')
+import moment = require('moment')
+import utils = require('./utils')
 var logger = require('./logging.js').console
 
 import GribCache = require('./grib_forecast_cache')
 
-var gribDir = __dirname + '/../gribs'
-var latestGrib = gribDir + '/latest.grb'
-var gribUpdateCheckIntervalMillis = 10 * 60 * 1000
+const gribDir = __dirname + '/../gribs'
+const latestGrib = gribDir + '/latest.grb'
+const gribUpdateCheckIntervalMillis = 10 * 60 * 1000
 
-function initDownloader(apiKey) {
+function initDownloader(apiKey): Bluebird<void> {
   logger.info("Initializing grib downloader.")
 
   return fsExtraP.mkdirsAsync(gribDir)
     .then(updateGribIfNeeded)
-    .then(function(gribUpdated) { if(!gribUpdated) GribCache.refreshFrom(latestGrib) })  // No new grib downloaded -> need to refresh cache manually
-    .then(function() {
-      scheduleGribUpdates() // Intentionally no 'return' here to launch the grib updates to the background
-    })
+    .then(gribUpdated => { if(!gribUpdated) GribCache.refreshFrom(latestGrib) })  // No new grib downloaded -> need to refresh cache manually
+    .then(() => { scheduleGribUpdates() })  // Intentionally no 'return' here to launch the grib updates to the background
 
-  function scheduleGribUpdates() {
+  function scheduleGribUpdates(): Bluebird<void> {
     return Bluebird.delay(gribUpdateCheckIntervalMillis)
       .then(updateGribIfNeeded)
       .then(scheduleGribUpdates)
       .catch(scheduleGribUpdates)
   }
 
-  function updateGribIfNeeded() {
+  function updateGribIfNeeded(): Bluebird<boolean> {
     logger.info('Checking for new grib..')
-    return Bluebird.join(getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp(), function(downloadedTime, publishedTime) {
+    return Bluebird.join(getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp(), (downloadedTime, publishedTime) => {
       logger.info('Downloaded grib timestamp: ', downloadedTime, ' Latest published grib timestamp: ', publishedTime)
-      return moment(downloadedTime).diff(moment(publishedTime)) === 0
+      return moment(downloadedTime || 0).isSameOrAfter(moment(publishedTime))
     })
-    .then(function(downloadedGribUpToDate) {
+    .then(downloadedGribUpToDate => {
       if(! downloadedGribUpToDate) {
-        return downloadLatestGrib()
-          .then(function() { return true })
+        return downloadLatestGrib().then(() => true)
       } else {
         logger.info("Downloaded HIRLAM grib is already up-to-date.")
         return false
@@ -46,9 +43,7 @@ function initDownloader(apiKey) {
     })
   }
 
-  function getLatestDownloadedGribTimestamp() {
-    return GribCache.getGribTimestamp(latestGrib)
-  }
+  function getLatestDownloadedGribTimestamp(): Bluebird<Date> { return GribCache.getGribTimestamp(latestGrib) }
 
   function getLatestPublishedGribTimestamp(): Bluebird<Date> {
     const gribMetadataUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
