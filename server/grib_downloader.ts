@@ -67,21 +67,19 @@ function initDownloader(apiKey) {
       })
   }
 
-  function downloadLatestGrib() {
-    var gribUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
+  function downloadLatestGrib(): Bluebird<void> {
+    const gribUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
     logger.info("Downloading latest HIRLAM grib..")
-    return requestP.get(gribUrl, { encoding: null })
-      .then(function(gribFileBuffer) {
+    return requestP.get(gribUrl, {encoding: null}).promise()
+      .then(gribFileBuffer => {
         if(gribFileBuffer.length === 0) {
           console.warn("Got empty response when downloading grib. Retrying..")
           return Bluebird.delay(5000).then(downloadLatestGrib)
         } else {
           return fsExtraP.writeFileAsync(latestGrib + '.tmp', gribFileBuffer)
-            .then(function() {
-              return fsExtraP.renameAsync(latestGrib + '.tmp', latestGrib)
-            })
-            .then(function() { logger.info('Successfully downloaded new grib file! (' + gribFileBuffer.length + ' bytes)') })
-            .then(function() { GribCache.refreshFrom(latestGrib) })
+            .then(() => fsExtraP.renameAsync(latestGrib + '.tmp', latestGrib))
+            .then(() => logger.info('Successfully downloaded new grib file! (' + gribFileBuffer.length + ' bytes)'))
+            .then(() => GribCache.refreshFrom(latestGrib))
         }
       })
   }
