@@ -1,14 +1,14 @@
-var BPromise = require('bluebird')
-var fs = BPromise.promisifyAll(require('fs'))
-var request = BPromise.promisifyAll(require('request'))
-var xml2js = BPromise.promisifyAll(require('xml2js'))
-var mkdirp = BPromise.promisify(require('mkdirp'));
+var Bluebird = require('bluebird')
+var fs = Bluebird.promisifyAll(require('fs'))
+var request = Bluebird.promisifyAll(require('request'))
+var xml2js = Bluebird.promisifyAll(require('xml2js'))
+var mkdirp = Bluebird.promisify(require('mkdirp'));
 var _ = require('lodash')
 var moment = require('moment')
 var utils = require('./utils')
 var logger = require('./logging.js').console
 
-import * as GribCache from './grib_forecast_cache'
+import GribCache = require('./grib_forecast_cache')
 
 var gribDir = __dirname + '/../gribs'
 var latestGrib = gribDir + '/latest.grb'
@@ -25,7 +25,7 @@ function initDownloader(apiKey) {
     })
 
   function scheduleGribUpdates() {
-    return BPromise.delay(gribUpdateCheckIntervalMillis)
+    return Bluebird.delay(gribUpdateCheckIntervalMillis)
       .then(updateGribIfNeeded)
       .then(scheduleGribUpdates)
       .catch(scheduleGribUpdates)
@@ -33,7 +33,7 @@ function initDownloader(apiKey) {
 
   function updateGribIfNeeded() {
     logger.info('Checking for new grib..')
-    return BPromise.join(getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp(), function(downloadedTime, publishedTime) {
+    return Bluebird.join(getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp(), function(downloadedTime, publishedTime) {
       logger.info('Downloaded grib timestamp: ', downloadedTime, ' Latest published grib timestamp: ', publishedTime)
       return moment(downloadedTime).diff(moment(publishedTime)) === 0
     })
@@ -69,7 +69,7 @@ function initDownloader(apiKey) {
         var gribFileBuffer = res.body
         if(gribFileBuffer.length === 0) {
           console.warn("Got empty response when downloading grib. Retrying..")
-          return BPromise.delay(5000).then(downloadLatestGrib)
+          return Bluebird.delay(5000).then(downloadLatestGrib)
         } else {
           return fs.writeFileAsync(latestGrib + '.tmp', gribFileBuffer)
             .then(function() {
