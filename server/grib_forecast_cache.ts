@@ -5,16 +5,16 @@ import Bluebird = require("bluebird")
 import fs = require('fs')
 const accessAsync = Bluebird.promisify<void, string, number>(fs.access)
 var gribParser = require('./grib_get_parser')
-var geolib = require('geolib')
-var moment = require('moment')
-var logger = require('./logging.js').console
+import geolib = require('geolib')
+import moment = require('moment')
+var logger = require('./logging').console
 import utils = require('./utils')
 import R = require('ramda')
 import L = require('partial.lenses')
 
-var CPU_COUNT = require('os').cpus().length
-var LAT_GRID_INCREMENT = 0.2
-var LNG_GRID_INCREMENT = 0.5
+const CPU_COUNT = require('os').cpus().length
+const LAT_GRID_INCREMENT = 0.2
+const LNG_GRID_INCREMENT = 0.5
 let cachedForecast: AreaForecast
 
 
@@ -52,21 +52,22 @@ export function refreshFrom(gribFile: string): Bluebird<void> {
       .then(bounds => createForecastLocations(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT))
       .then(forecastLocations => getPointForecastsForLocations(forecastLocations, gribFile))
       .then(pointForecasts => { cachedForecast = { publishTime: timestamp, pointForecasts } })
-      .then(function() { logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecast.pointForecasts.length + ' points.')})
+      .then(() => { logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecast.pointForecasts.length + ' points.')})
     )
+
+  function getPointForecastsForLocations(locations: Coords[], gribFile: string): Bluebird<PointForecast[]> {
+    return Bluebird.map(locations, location => gribParser.getPointForecastFromGrib(gribFile, location.lat, location.lng), {concurrency: CPU_COUNT})
+  }
+
+  function createForecastLocations(bounds: Bounds, latIncrement: number, lngIncrement: number): Coords[] {
+    const latitudes = utils.rangeStep(bounds.swCorner.lat, bounds.neCorner.lat, latIncrement).map(roundTo1Decimal)
+    const longitudes = utils.rangeStep(bounds.swCorner.lng, bounds.neCorner.lng, lngIncrement).map(roundTo1Decimal)
+
+    return R.flatten<Coords>(latitudes.map(lat => longitudes.map(lng => ({lat, lng}))))
+  }
 }
 
 
-function getPointForecastsForLocations(locations: Coords[], gribFile: string): Bluebird<PointForecast[]> {
-  return Bluebird.map(locations, location => gribParser.getPointForecastFromGrib(gribFile, location.lat, location.lng), {concurrency: CPU_COUNT})
-}
-
-function createForecastLocations(bounds, latIncrement, lngIncrement): Coords[] {
-  const latitudes = utils.rangeStep(bounds.swCorner.lat, bounds.neCorner.lat, latIncrement).map(roundTo1Decimal)
-  const longitudes = utils.rangeStep(bounds.swCorner.lng, bounds.neCorner.lng, lngIncrement).map(roundTo1Decimal)
-
-  return R.flatten<Coords>(latitudes.map(lat => longitudes.map(lng => ({lat, lng}))))
-}
 
 function getGribBounds(gribFile: string): Bluebird<Bounds> {
   // TODO: Type gribGet properly
@@ -90,6 +91,6 @@ export function getGribTimestamp(gribFile: string): Bluebird<Date> {
     .catch(() => undefined)
 }
 
-function roundTo1Decimal(num) {
+function roundTo1Decimal(num: number): number {
   return Math.round(num * 10) / 10
 }
