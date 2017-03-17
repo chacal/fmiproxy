@@ -26,6 +26,20 @@ export interface Coords {
   lng: number
 }
 
+export interface ObservationItem {
+  time: Date,
+  temperature: number,
+  windSpeedMs: number,
+  windGustMs: number,
+  windDir: number,
+  pressureMbar: number
+}
+
+export interface StationObservation {
+  station: ObservationStation,
+  observations: ObservationItem[]
+}
+
 export interface ObservationStation extends Coords {
   geoid: string,
   name: string
