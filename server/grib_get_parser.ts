@@ -6,7 +6,7 @@ import R = require('ramda')
 import L = require('partial.lenses')
 import * as Bluebird from "bluebird"
 
-function getPointForecastFromGrib(gribPath: string, latitude: number, longitude: number, startTime: Date = new Date(0)): Bluebird<PointForecast> {
+export function getPointForecastFromGrib(gribPath: string, latitude: number, longitude: number, startTime: Date = new Date(0)): Bluebird<PointForecast> {
   return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
     .then(stdout => parseForecastTimeAndItems(stdout, latitude, longitude))
     .then(forecast => L.remove(utils.itemsBefore(startTime), forecast))

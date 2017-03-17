@@ -1,10 +1,10 @@
 import {PointForecast, Coords, AreaForecast, Bounds, ForecastItem} from "./ForecastDomain"
-var gribGet = require('./utils').grib_get
+import { grib_get as gribGet } from './utils'
 import _ = require('lodash')
 import Bluebird = require("bluebird")
 import fs = require('fs')
 const accessAsync = Bluebird.promisify<void, string, number>(fs.access)
-var gribParser = require('./grib_get_parser')
+import * as gribParser from './grib_get_parser'
 import geolib = require('geolib')
 import moment = require('moment')
 var logger = require('./logging').console
@@ -70,7 +70,6 @@ export function refreshFrom(gribFile: string): Bluebird<void> {
 
 
 function getGribBounds(gribFile: string): Bluebird<Bounds> {
-  // TODO: Type gribGet properly
   return gribGet(['-p', 'latitudeOfFirstGridPointInDegrees,longitudeOfFirstGridPointInDegrees,latitudeOfLastGridPointInDegrees,longitudeOfLastGridPointInDegrees', gribFile])
     .then(output => output.split('\n')[0])
     .then(line => {
