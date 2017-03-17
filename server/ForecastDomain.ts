@@ -27,3 +27,10 @@ export interface Coords {
   lat: number,
   lng: number
 }
+
+export interface ObservationStation {
+  geoid: string,
+  name: string,
+  latitude: number,
+  longitude: number
+}

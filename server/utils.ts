@@ -46,7 +46,7 @@ function getGeoidFromGridSeriesObservation(gridSeriesObservation) {
   return _.find(gmlNames, function(name) { return _.get(name, '$.codeSpace') === 'http://xml.fmi.fi/namespace/locationcode/geoid' })._
 }
 
-function locationFromPositionString(position) {
+export function locationFromPositionString(position): {latitude: number, longitude: number} {  // TODO: Better type
   var position = position.trim()
   var latitude = position.substr(0, position.indexOf(' '))
   var longitude = position.trim().substr(position.indexOf(' ') + 1)
@@ -82,7 +82,7 @@ module.exports = {
   getFmiXMLasJson,
   getStationInfoFromGmlPoint: getStationInfoFromGmlPoint,
   getGeoidFromGridSeriesObservation: getGeoidFromGridSeriesObservation,
-  locationFromPositionString: locationFromPositionString,
+  locationFromPositionString,
   parseHourlyTimestampFromGribItemDateAndTime,
   removeOlderForecastItems,
   rangeStep
