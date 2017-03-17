@@ -7,23 +7,24 @@ var _ = require('lodash')
 var moment = require('moment')
 import L = require('partial.lenses')
 import R = require('ramda')
+import Bluebird = require('bluebird')
 
-function grib_get(params) {
-  return new BPromise(function (resolve, reject) {
-    var grib_get = child_process.spawn('grib_get', params)
-    var output = ""
-    var errorOutput = ""
+export function grib_get(params): Bluebird<string> {
+  return new Bluebird<string>((resolve, reject) => {
+    const grib_get = child_process.spawn('grib_get', params)
+    let output = ""
+    let errorOutput = ""
 
-    grib_get.on('error', function(err) { reject(err) })
-    grib_get.on('close', function(code) {
+    grib_get.on('error', err => reject(err))
+    grib_get.on('close', code => {
       if(code === 0) {
         resolve(output)
       } else {
         reject({message: 'grib_get exited with error ' + code + ':\n' + errorOutput})
       }
     })
-    grib_get.stderr.on('data', function(chunk) { errorOutput = errorOutput + chunk })
-    grib_get.stdout.on('data', function(chunk) { output = output + chunk })
+    grib_get.stderr.on('data', chunk => errorOutput += chunk)
+    grib_get.stdout.on('data', chunk => output += chunk)
   })
 }
 
@@ -34,13 +35,13 @@ export function getFmiXMLasJson(url) {
     })
 }
 
-function getStationInfoFromGmlPoint(gmlPoint) {
+export function getStationInfoFromGmlPoint(gmlPoint) {
   var name = gmlPoint['gml:name'][0]
   var position = gmlPoint['gml:pos'][0].trim()
   return _.extend({ name: name }, locationFromPositionString(position))
 }
 
-function getGeoidFromGridSeriesObservation(gridSeriesObservation) {
+export function getGeoidFromGridSeriesObservation(gridSeriesObservation) {
   var pathStart = 'om:featureOfInterest[0].sams:SF_SpatialSamplingFeature[0]'
   var gmlNames = _.get(gridSeriesObservation, pathStart + '.sam:sampledFeature[0].target:LocationCollection[0].target:member[0].target:Location[0].gml:name')
   return _.find(gmlNames, function(name) { return _.get(name, '$.codeSpace') === 'http://xml.fmi.fi/namespace/locationcode/geoid' })._
