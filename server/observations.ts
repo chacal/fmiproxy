@@ -1,23 +1,19 @@
 import {StationObservation, ObservationItem} from "./ForecastDomain"
-var utils = require('./utils')
+import utils = require('./utils')
 import L = require('partial.lenses')
 import R = require('ramda')
+import * as Bluebird from "bluebird"
 
 module.exports = function(apiKey) {
-  var baseUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::observations::weather::multipointcoverage&parameters=temperature,windspeedms,windgust,winddirection,pressure'
+  const baseUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::observations::weather::multipointcoverage&parameters=temperature,windspeedms,windgust,winddirection,pressure'
 
-  function observationUrlForGeoid(geoid) { return baseUrl + '&geoid=' + geoid }
-  function observationUrlForPlace(place) { return baseUrl + '&place=' + place }
+  const observationUrlForGeoid = geoid => baseUrl + '&geoid=' + geoid
+  const observationUrlForPlace = place => baseUrl + '&place=' + place
 
   return {
 
-    getObservationsForGeoid: function(geoid) {
-      return utils.getFmiXMLasJson(observationUrlForGeoid(geoid)).then(parseStationObservation)
-    },
-
-    getObservationsForPlace: function(place) {
-      return utils.getFmiXMLasJson(observationUrlForPlace(place)).then(parseStationObservation)
-    }
+    getObservationsForGeoid: (geoid: string): Bluebird<StationObservation> => utils.getFmiXMLasJson(observationUrlForGeoid(geoid)).then(parseStationObservation),
+    getObservationsForPlace: (place: string): Bluebird<StationObservation> => utils.getFmiXMLasJson(observationUrlForPlace(place)).then(parseStationObservation)
 
   }
 
