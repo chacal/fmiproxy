@@ -7,7 +7,7 @@ var logger = require('./logging.js').console
 var xpath = require('xpath')
 import { DOMParser } from 'xmldom'
 import R = require('ramda')
-import {ObservationStation} from "./ForecastDomain"
+import {ObservationStation, NearestObservationStation} from "./ForecastDomain"
 import Bluebird = require("bluebird")
 
 let observationStations: ObservationStation[] = []
@@ -33,7 +33,8 @@ export function init(apiKey): Bluebird<void> {
         const geoid: string = select('./gml:name[@codeSpace="http://xml.fmi.fi/namespace/locationcode/geoid"]/text()', locationNode).toString()
         const poinRef = select('./target:representativePoint/@xlink:href', locationNode, true).value.substr(1)
         const position = select('//gml:Point[@gml:id="' + poinRef + '"]/gml:pos/text()', doc, true).toString()
-        return R.merge( { geoid, name }, utils.locationFromPositionString(position))
+        const {lat, lng} = utils.locationFromPositionString(position)
+        return {geoid, name, lat, lng}
       }
     })
     .then(stations => {
@@ -42,9 +43,9 @@ export function init(apiKey): Bluebird<void> {
     })
 }
 
-function getNearestStation(latitude, longitude) {
-  var nearest = geolib.findNearest({latitude: latitude, longitude: longitude}, observationStations)
-  return _.extend({ distanceMeters: nearest.distance }, observationStations[nearest.key])
+function getNearestStation(latitude: number, longitude: number): NearestObservationStation {
+  const nearest = geolib.findNearest({latitude, longitude}, observationStations)
+  return R.merge({ distanceMeters: nearest.distance }, observationStations[nearest.key] as any)
 }
 
 module.exports = {

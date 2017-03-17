@@ -3,10 +3,8 @@ export interface AreaForecast {
   pointForecasts: PointForecast[]
 }
 
-export interface PointForecast {
+export interface PointForecast extends Coords {
   publishTime: Date,
-  lat: number,
-  lng: number,
   forecastItems: ForecastItem[]
 }
 
@@ -28,9 +26,11 @@ export interface Coords {
   lng: number
 }
 
-export interface ObservationStation {
+export interface ObservationStation extends Coords {
   geoid: string,
-  name: string,
-  latitude: number,
-  longitude: number
+  name: string
+}
+
+export interface NearestObservationStation extends ObservationStation {
+  distanceMeters: number
 }

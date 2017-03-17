@@ -1,4 +1,4 @@
-import {ForecastItem, PointForecast} from "./ForecastDomain"
+import {ForecastItem, PointForecast, Coords} from "./ForecastDomain"
 var BPromise = require('bluebird')
 var request = BPromise.promisifyAll(require('request'))
 var xml2js = BPromise.promisifyAll(require('xml2js'))
@@ -46,11 +46,11 @@ function getGeoidFromGridSeriesObservation(gridSeriesObservation) {
   return _.find(gmlNames, function(name) { return _.get(name, '$.codeSpace') === 'http://xml.fmi.fi/namespace/locationcode/geoid' })._
 }
 
-export function locationFromPositionString(position): {latitude: number, longitude: number} {  // TODO: Better type
+export function locationFromPositionString(position: string): Coords {
   var position = position.trim()
   var latitude = position.substr(0, position.indexOf(' '))
   var longitude = position.trim().substr(position.indexOf(' ') + 1)
-  return { latitude: parseFloat(latitude), longitude: parseFloat(longitude) }
+  return { lat: parseFloat(latitude), lng: parseFloat(longitude) }
 }
 
 export function parseHourlyTimestampFromGribItemDateAndTime(date, time) {
