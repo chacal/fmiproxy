@@ -76,15 +76,3 @@ export function rangeStep(start: number, stop: number, step: number = 1): number
     R.range(0, (1 + (stop - start) / step) >>> 0)
   )
 }
-
-
-module.exports = {
-  grib_get: grib_get,
-  getFmiXMLasJson,
-  getStationInfoFromGmlPoint: getStationInfoFromGmlPoint,
-  getGeoidFromGridSeriesObservation: getGeoidFromGridSeriesObservation,
-  locationFromPositionString,
-  parseHourlyTimestampFromGribItemDateAndTime,
-  removeOlderForecastItems,
-  rangeStep
-}
