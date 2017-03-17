@@ -19,10 +19,10 @@ module.exports = function(apiKey) {
 
   function parseStationObservation(json: any): StationObservation {
     const gridSeriesObservation = L.get(['wfs:FeatureCollection', 'wfs:member', 0, 'omso:GridSeriesObservation', 0], json)
-    const geoid = utils.getGeoidFromGridSeriesObservation(gridSeriesObservation)
+    const geoid = getGeoidFromGridSeriesObservation(gridSeriesObservation)
 
     const gmlPoint = L.get(['om:featureOfInterest', 0, 'sams:SF_SpatialSamplingFeature', 0, 'sams:shape', 0, 'gml:MultiPoint', 0, 'gml:pointMember', 0, 'gml:Point', 0], gridSeriesObservation)
-    const stationInfo = utils.getStationInfoFromGmlPoint(gmlPoint)
+    const stationInfo = getStationInfoFromGmlPoint(gmlPoint)
 
     const pathStart = ['om:result', 0, 'gmlcov:MultiPointCoverage', 0]
     const values = L.get([pathStart, 'gml:rangeSet', 0, 'gml:DataBlock', 0, 'gml:doubleOrNilReasonTupleList', 0], gridSeriesObservation)
@@ -49,6 +49,21 @@ module.exports = function(apiKey) {
         pressureMbar: parseFloat(parts[4]),
         time: new Date(parseInt(parts[7]) * 1000)
       }
+    }
+
+    function getGeoidFromGridSeriesObservation(gridSeriesObservation: any): string {
+      return L.get(['om:featureOfInterest', 0, 'sams:SF_SpatialSamplingFeature', 0,
+          'sam:sampledFeature', 0, 'target:LocationCollection', 0, 'target:member', 0,
+          'target:Location', 0, 'gml:name',
+          L.find(gmlName => gmlName['$'].codeSpace === 'http://xml.fmi.fi/namespace/locationcode/geoid'),
+          '_'],
+        gridSeriesObservation)
+    }
+
+    function getStationInfoFromGmlPoint(gmlPoint: any): any {
+      const name = gmlPoint['gml:name'][0]
+      const position = gmlPoint['gml:pos'][0].trim()
+      return R.merge({ name }, utils.locationFromPositionString(position) as any)
     }
 
     function trimmedLines(input: string): string[] { return input.trim().split(/\n/).map(line => line.trim()) }

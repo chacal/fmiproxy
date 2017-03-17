@@ -32,18 +32,6 @@ export function getFmiXMLasJson(url: string): Bluebird<any> {
     .then(parseXml2JsAsync)
 }
 
-export function getStationInfoFromGmlPoint(gmlPoint) {
-  var name = gmlPoint['gml:name'][0]
-  var position = gmlPoint['gml:pos'][0].trim()
-  return _.extend({ name: name }, locationFromPositionString(position))
-}
-
-export function getGeoidFromGridSeriesObservation(gridSeriesObservation) {
-  var pathStart = 'om:featureOfInterest[0].sams:SF_SpatialSamplingFeature[0]'
-  var gmlNames = _.get(gridSeriesObservation, pathStart + '.sam:sampledFeature[0].target:LocationCollection[0].target:member[0].target:Location[0].gml:name')
-  return _.find(gmlNames, function(name) { return _.get(name, '$.codeSpace') === 'http://xml.fmi.fi/namespace/locationcode/geoid' })._
-}
-
 export function locationFromPositionString(position: string): Coords {
   var position = position.trim()
   var latitude = position.substr(0, position.indexOf(' '))
