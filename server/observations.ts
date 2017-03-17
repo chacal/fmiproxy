@@ -63,7 +63,7 @@ module.exports = function(apiKey) {
     function getStationInfoFromGmlPoint(gmlPoint: any): any {
       const name = gmlPoint['gml:name'][0]
       const position = gmlPoint['gml:pos'][0].trim()
-      return R.merge({ name }, utils.locationFromPositionString(position) as any)
+      return R.merge({ name }, utils.coordinatesFromPositionString(position) as any)
     }
 
     function trimmedLines(input: string): string[] { return input.trim().split(/\n/).map(line => line.trim()) }

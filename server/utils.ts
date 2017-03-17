@@ -1,11 +1,11 @@
 import {ForecastItem, PointForecast, Coords} from "./ForecastDomain"
 import child_process = require('child_process')
-var _ = require('lodash')
 import moment = require('moment')
 import requestP = require('request-promise')
 import L = require('partial.lenses')
 import R = require('ramda')
 import Bluebird = require('bluebird')
+import Moment = moment.Moment
 const parseXml2JsAsync = Bluebird.promisify(require('xml2js').parseString)
 
 export function grib_get(params: string[]): Bluebird<string> {
@@ -32,19 +32,17 @@ export function getFmiXMLasJson(url: string): Bluebird<any> {
     .then(parseXml2JsAsync)
 }
 
-export function locationFromPositionString(position: string): Coords {
-  var position = position.trim()
-  var latitude = position.substr(0, position.indexOf(' '))
-  var longitude = position.trim().substr(position.indexOf(' ') + 1)
-  return { lat: parseFloat(latitude), lng: parseFloat(longitude) }
+export function coordinatesFromPositionString(position: string): Coords {
+  const parts = position.trim().split(/ /)
+  return { lat: parseFloat(parts[0]), lng: parseFloat(parts[1]) }
 }
 
-export function parseHourlyTimestampFromGribItemDateAndTime(date, time) {
+export function parseFullHourlDateFromGribItemDateAndTime(date: string, time: string): Date {
   // Return timestamp with one hour precision (ignores minutes)
   // Works correctly for time inputs: '0', '12', '600', '1600', '1230'
   // Assumes that the date & time are given in GMT time zone
-  var time = (time.length === 1 || time.length === 3) ? '0' + time : time
-  return moment(date + time + '+0000', 'YYYYMMDDHHZ')
+  const hours = (time.length === 1 || time.length === 3) ? '0' + time : time
+  return moment(date + hours + '+0000', 'YYYYMMDDHHZ').toDate()
 }
 
 export function removeOlderForecastItems(forecast: PointForecast, time: Date): PointForecast {

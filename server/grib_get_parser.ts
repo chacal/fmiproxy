@@ -42,7 +42,7 @@ function parseForecastTimeAndItems(gribGetOutput: string, lat: number, lng: numb
 
     return {
       name: datumName,
-      time: utils.parseHourlyTimestampFromGribItemDateAndTime(date, time).clone().add(timeIncrement, 'h').toDate(),
+      time: moment(utils.parseFullHourlDateFromGribItemDateAndTime(date, time)).clone().add(timeIncrement, 'h').toDate(),
       value: datumValue
     }
   }

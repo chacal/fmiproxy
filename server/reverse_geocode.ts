@@ -32,7 +32,7 @@ export function init(apiKey): Bluebird<void> {
         const geoid: string = select('./gml:name[@codeSpace="http://xml.fmi.fi/namespace/locationcode/geoid"]/text()', locationNode).toString()
         const poinRef = select('./target:representativePoint/@xlink:href', locationNode, true).value.substr(1)
         const position = select('//gml:Point[@gml:id="' + poinRef + '"]/gml:pos/text()', doc, true).toString()
-        const {lat, lng} = utils.locationFromPositionString(position)
+        const {lat, lng} = utils.coordinatesFromPositionString(position)
         return {geoid, name, lat, lng}
       }
     })

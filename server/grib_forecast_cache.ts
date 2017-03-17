@@ -86,7 +86,7 @@ export function getGribTimestamp(gribFile: string): Bluebird<Date> {
       const parts = output.split(/\n/)[0].split(/ /)
       const dataDate = parts[0]
       const dataTime = parts[1]
-      return utils.parseHourlyTimestampFromGribItemDateAndTime(dataDate, dataTime).toDate()
+      return utils.parseFullHourlDateFromGribItemDateAndTime(dataDate, dataTime)
     })
     .catch(() => undefined)
 }
