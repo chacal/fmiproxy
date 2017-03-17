@@ -1,15 +1,14 @@
 import {ForecastItem, PointForecast, Coords} from "./ForecastDomain"
-var BPromise = require('bluebird')
-var request = BPromise.promisifyAll(require('request'))
-var xml2js = BPromise.promisifyAll(require('xml2js'))
-var child_process = require('child_process')
+import child_process = require('child_process')
 var _ = require('lodash')
-var moment = require('moment')
+import moment = require('moment')
+import requestP = require('request-promise')
 import L = require('partial.lenses')
 import R = require('ramda')
 import Bluebird = require('bluebird')
+const parseXml2JsAsync = Bluebird.promisify(require('xml2js').parseString)
 
-export function grib_get(params): Bluebird<string> {
+export function grib_get(params: string[]): Bluebird<string> {
   return new Bluebird<string>((resolve, reject) => {
     const grib_get = child_process.spawn('grib_get', params)
     let output = ""
@@ -28,11 +27,9 @@ export function grib_get(params): Bluebird<string> {
   })
 }
 
-export function getFmiXMLasJson(url) {
-  return request.getAsync(url)
-    .then(function(res) {
-      return xml2js.parseStringAsync(res.body)
-    })
+export function getFmiXMLasJson(url: string): Bluebird<any> {
+  return requestP.get(url)
+    .then(parseXml2JsAsync)
 }
 
 export function getStationInfoFromGmlPoint(gmlPoint) {
