@@ -1,4 +1,4 @@
-import {ForecastItem, PointForecast, Coords} from "./ForecastDomain"
+import {ForecastItem, Coords} from "./ForecastDomain"
 import child_process = require('child_process')
 import moment = require('moment')
 import requestP = require('request-promise')
