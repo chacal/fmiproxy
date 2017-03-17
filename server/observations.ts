@@ -12,16 +12,16 @@ module.exports = function(apiKey) {
   return {
 
     getObservationsForGeoid: function(geoid) {
-      return utils.getFmiXMLasJson(observationUrlForGeoid(geoid)).then(parseObservationsResponse)
+      return utils.getFmiXMLasJson(observationUrlForGeoid(geoid)).then(parseStationObservation)
     },
 
     getObservationsForPlace: function(place) {
-      return utils.getFmiXMLasJson(observationUrlForPlace(place)).then(parseObservationsResponse)
+      return utils.getFmiXMLasJson(observationUrlForPlace(place)).then(parseStationObservation)
     }
 
   }
 
-  function parseObservationsResponse(json: any): StationObservation {
+  function parseStationObservation(json: any): StationObservation {
     const gridSeriesObservation = L.get(['wfs:FeatureCollection', 'wfs:member', 0, 'omso:GridSeriesObservation', 0], json)
     const geoid = utils.getGeoidFromGridSeriesObservation(gridSeriesObservation)
 
