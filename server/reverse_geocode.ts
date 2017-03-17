@@ -1,10 +1,9 @@
 import requestP = require('request-promise')
-var _ = require('lodash')
-var geolib = require('geolib')
-var moment = require('moment')
+import geolib = require('geolib')
+import moment = require('moment')
 import utils = require('./utils')
 var logger = require('./logging.js').console
-var xpath = require('xpath')
+import xpath = require('xpath')
 import { DOMParser } from 'xmldom'
 import R = require('ramda')
 import {ObservationStation, NearestObservationStation} from "./ForecastDomain"
@@ -14,8 +13,8 @@ let observationStations: ObservationStation[] = []
 
 export function init(apiKey): Bluebird<void> {
   logger.info("Updating observation station cache..")
-  var lastFullHour = moment().minutes(0).seconds(0).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"
-  var observationsUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
+  const lastFullHour = moment().minutes(0).seconds(0).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"
+  const observationsUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
 
   return requestP.get(observationsUrl)
     .then(body => {
@@ -49,6 +48,6 @@ function getNearestStation(latitude: number, longitude: number): NearestObservat
 }
 
 module.exports = {
-  init: init,
-  getNearestStation: getNearestStation
+  init,
+  getNearestStation
 }
