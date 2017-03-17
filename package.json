@@ -25,6 +25,7 @@
     "@types/ramda": "github:types/npm-ramda",
     "@types/request": "0.0.41",
     "@types/request-promise": "^4.1.33",
+    "@types/xmldom": "^0.1.29",
     "bluebird": "^3.5.0",
     "compression": "^1.6.0",
     "cors": "^2.7.1",
