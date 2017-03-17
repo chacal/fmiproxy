@@ -29,7 +29,7 @@ export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): 
   return L.remove(['pointForecasts',
       L.elems,
       L.choose(forecast => forecastInBounds(forecast, corners)
-        ? ['forecastItems', L.elems, L.when(isItemBefore(startTime))]  // PointForecast in bounds -> filter items by time
+        ? utils.itemsBefore(startTime)                                 // PointForecast in bounds -> filter items by time
         : []                                                           // PointForecast out of bounds -> remove it itself
       )],
     cachedForecast)

@@ -45,12 +45,10 @@ export function parseFullHourlDateFromGribItemDateAndTime(date: string, time: st
   return moment(date + hours + '+0000', 'YYYYMMDDHHZ').toDate()
 }
 
-export function removeOlderForecastItems(forecast: PointForecast, time: Date): PointForecast {
-  return L.remove(['forecastItems', L.elems, L.when(isItemBeforeStartTime)], forecast)
+export const itemsBefore = (time: Date) => ['forecastItems', L.elems, L.when(isItemBefore(time))]
 
-  function isItemBeforeStartTime(item: ForecastItem) {
-    return moment(item.time).isBefore(moment(time))
-  }
+export function isItemBefore(time: Date): (item: ForecastItem) => boolean {
+  return item => moment(item.time).isBefore(moment(time))
 }
 
 export function rangeStep(start: number, stop: number, step: number = 1): number[] {
