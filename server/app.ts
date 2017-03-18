@@ -1,15 +1,14 @@
-var express = require('express')
-var cors = require('cors')
-var compression = require('compression')
-var BPromise = require('bluebird')
-var _ = require('lodash')
+import express = require('express')
+import cors = require('cors')
+import compression = require('compression')
+import Bluebird = require('bluebird')
 var morgan = require('morgan')
 var logging = require('./logging.js')
 var logger = logging.console
 var FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
 var MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
 var geocode = require('./reverse_geocode.js')
-var gribParser = require('./grib_get_parser.js')
+import * as gribParser from './grib_get_parser'
 var observations = require('./observations.js')(FMIAPIKey)
 var gribDownloader = require('./grib_downloader.js')
 import * as ForecastCache from './grib_forecast_cache'
@@ -22,7 +21,7 @@ app.use(compression())
 
 logger.info("Starting fmiproxy..")
 
-BPromise.join(geocode.init(FMIAPIKey), gribDownloader.init(FMIAPIKey))
+Bluebird.join(geocode.init(FMIAPIKey), gribDownloader.init(FMIAPIKey))
   .then(startServer)
 
 function startServer() {
@@ -37,7 +36,7 @@ function startServer() {
       res.status(400).json({message: 'Use either bounds or lat & lon, not both!'}).end()
     } else if(req.query.bounds) {
       try {
-        var coords = _.map(req.query.bounds.trim().split(','), parseFloat)
+        const coords = req.query.bounds.trim().split(',').map(parseFloat)
         res.json(ForecastCache.getAreaForecast({ swCorner: { lat: coords[0], lng: coords[1] }, neCorner: { lat: coords[2], lng: coords[3] } }, req.query.startTime))
       } catch (e) {
         next(e)
