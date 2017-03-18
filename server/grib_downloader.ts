@@ -6,6 +6,7 @@ import moment = require('moment')
 import utils = require('./utils')
 import { consoleLogger as logger } from './logging'
 
+import * as GribReader from './GribReader'
 import GribCache = require('./grib_forecast_cache')
 
 const gribDir = __dirname + '/../gribs'
@@ -43,7 +44,7 @@ export function init(apiKey): Bluebird<void> {
     })
   }
 
-  function getLatestDownloadedGribTimestamp(): Bluebird<Date> { return GribCache.getGribTimestamp(latestGribFile) }
+  function getLatestDownloadedGribTimestamp(): Bluebird<Date> { return GribReader.getGribTimestamp(latestGribFile) }
 
   function getLatestPublishedGribTimestamp(): Bluebird<Date> {
     const gribMetadataUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'

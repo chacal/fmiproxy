@@ -21,6 +21,16 @@ export function getGribBounds(gribFile: string): Bluebird<Bounds> {
     })
 }
 
+export function getGribTimestamp(gribFile: string): Bluebird<Date> {
+  return utils.grib_get(['-p', 'dataDate,dataTime', gribFile])
+    .then(output => {
+      const parts = output.split(/\n/)[0].split(/ /)
+      const dataDate = parts[0]
+      const dataTime = parts[1]
+      return utils.parseFullHourlDateFromGribItemDateAndTime(dataDate, dataTime)
+    })
+    .catch(() => undefined)
+}
 
 
 /*
