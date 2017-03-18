@@ -12,8 +12,8 @@ export default function init(apiKey) {
 
   return {
 
-    getObservationsForGeoid: (geoid: string): Bluebird<StationObservation> => utils.getFmiXMLasJson(observationUrlForGeoid(geoid)).then(parseStationObservation),
-    getObservationsForPlace: (place: string): Bluebird<StationObservation> => utils.getFmiXMLasJson(observationUrlForPlace(place)).then(parseStationObservation)
+    getStationObservationForGeoid: (geoid: string): Bluebird<StationObservation> => utils.getFmiXMLasJson(observationUrlForGeoid(geoid)).then(parseStationObservation),
+    getStationObservationForPlace: (place: string): Bluebird<StationObservation> => utils.getFmiXMLasJson(observationUrlForPlace(place)).then(parseStationObservation)
 
   }
 

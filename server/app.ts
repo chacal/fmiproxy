@@ -14,7 +14,7 @@ const observations = Observations(FMIAPIKey)
 import * as gribDownloader from './grib_downloader'
 import * as ForecastCache from './grib_forecast_cache'
 
-var app = express()
+const app = express()
 app.set('port', (process.env.PORT || 8000))
 app.use(morgan(logging.requestLoggingFormat, { stream: logging.fileLoggerStream }))
 app.use(cors())
@@ -22,19 +22,17 @@ app.use(compression())
 
 logger.info("Starting fmiproxy..")
 
-Bluebird.join(geocode.init(FMIAPIKey), gribDownloader.init(FMIAPIKey))
+Bluebird.all([geocode.init(FMIAPIKey), gribDownloader.init(FMIAPIKey)])
   .then(startServer)
 
-function startServer() {
+function startServer(): void {
   logger.info("Starting HTTP server..")
 
-  app.get(MOUNT_PREFIX + "/nearest-station", function(req, res, next) {
-    res.json(geocode.getNearestStation(req.query.lat, req.query.lon)).end()
-  })
+  app.get(MOUNT_PREFIX + "/nearest-station", (req, res) => res.json(geocode.getNearestStation(req.query.lat, req.query.lon)))
 
-  app.get(MOUNT_PREFIX + "/hirlam-forecast", function(req, res, next) {
+  app.get(MOUNT_PREFIX + "/hirlam-forecast", (req, res, next) => {
     if(req.query.bounds && (req.query.lat || req.query.lon)) {
-      res.status(400).json({message: 'Use either bounds or lat & lon, not both!'}).end()
+      res.status(400).json({message: 'Use either bounds or lat & lon, not both!'})
     } else if(req.query.bounds) {
       try {
         const coords = req.query.bounds.trim().split(',').map(parseFloat)
@@ -44,34 +42,32 @@ function startServer() {
       }
     } else if(req.query.lat && req.query.lon) {
       gribParser.getPointForecastFromGrib(gribDownloader.latestGribFile, req.query.lat, req.query.lon, req.query.startTime)
-        .then(function(forecast) { res.json(forecast).end() })
+        .then(pf => res.json(pf))
         .catch(next)
     } else {
-      res.status(400).json({message: 'Either bounds or lat & lon must be given!'}).end()
+      res.status(400).json({message: 'Either bounds or lat & lon must be given!'})
     }
   })
 
-  app.get(MOUNT_PREFIX + "/observations", function(req, res, next) {
+  app.get(MOUNT_PREFIX + "/observations", (req, res, next) => {
     if(req.query.geoid && req.query.place) {
-      res.status(400).json({message: 'Use either geiod or place, not both!'}).end()
+      res.status(400).json({message: 'Use either geiod or place, not both!'})
     } else if(req.query.geoid) {
-      observations.getObservationsForGeoid(req.query.geoid)
-        .then(function(observations) { res.json(observations).end() })
+      observations.getStationObservationForGeoid(req.query.geoid)
+        .then(observation => res.json(observation))
         .catch(next)
     } else if(req.query.place) {
-      observations.getObservationsForPlace(req.query.place)
-        .then(function(observations) { res.json(observations).end() })
+      observations.getStationObservationForPlace(req.query.place)
+        .then(observations => res.json(observations))
         .catch(next)
     } else {
-      res.status(400).json({message: 'Either geiod or place must be given!'}).end()
+      res.status(400).json({message: 'Either geiod or place must be given!'})
     }
   })
 
-  app.listen(app.get('port'), function() {
-    logger.info("FMI proxy is running at localhost:" + app.get('port'))
-  })
+  app.listen(app.get('port'), () => logger.info("FMI proxy is running at localhost:" + app.get('port')))
 
-  app.use(function (err, req, res, next) {
+  app.use((err, req, res) => {
     logger.error(err)
     res.status(err.status || 500)
     res.json({
