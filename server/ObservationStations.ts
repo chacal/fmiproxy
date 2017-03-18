@@ -1,7 +1,7 @@
 import requestP = require('request-promise')
 import geolib = require('geolib')
 import moment = require('moment')
-import utils = require('./utils')
+import * as Utils from './Utils'
 import { consoleLogger as logger } from './Logging'
 import xpath = require('xpath')
 import { DOMParser } from 'xmldom'
@@ -32,7 +32,7 @@ export function init(apiKey): Bluebird<void> {
         const geoid: string = select('./gml:name[@codeSpace="http://xml.fmi.fi/namespace/locationcode/geoid"]/text()', locationNode).toString()
         const poinRef = select('./target:representativePoint/@xlink:href', locationNode, true).value.substr(1)
         const position = select('//gml:Point[@gml:id="' + poinRef + '"]/gml:pos/text()', doc, true).toString()
-        const {lat, lng} = utils.coordinatesFromPositionString(position)
+        const {lat, lng} = Utils.coordinatesFromPositionString(position)
         return {geoid, name, lat, lng}
       }
     })

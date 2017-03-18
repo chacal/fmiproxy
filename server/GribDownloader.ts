@@ -3,7 +3,7 @@ import requestP = require('request-promise')
 import fsExtraP = require('fs-extra-promise')
 import L = require('partial.lenses')
 import moment = require('moment')
-import utils = require('./utils')
+import * as Utils from './Utils'
 import { consoleLogger as logger } from './Logging'
 
 import * as GribReader from './GribReader'
@@ -48,7 +48,7 @@ export function init(apiKey): Bluebird<void> {
 
   function getLatestPublishedGribTimestamp(): Bluebird<Date> {
     const gribMetadataUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
-    return utils.getFmiXMLasJson(gribMetadataUrl)
+    return Utils.getFmiXMLasJson(gribMetadataUrl)
       .then(json => {
         const last = L.choose(arr => L.index(arr.length - 1))
 

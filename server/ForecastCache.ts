@@ -5,7 +5,7 @@ import * as GribReader from './GribReader'
 import geolib = require('geolib')
 import moment = require('moment')
 import { consoleLogger as logger } from './Logging'
-import utils = require('./utils')
+import * as Utils from './Utils'
 import R = require('ramda')
 import L = require('partial.lenses')
 
@@ -26,7 +26,7 @@ export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): 
   return L.remove(['pointForecasts',
       L.elems,
       L.choose(forecast => forecastInBounds(forecast, corners)
-        ? utils.itemsBefore(startTime)                                 // PointForecast in bounds -> filter items by time
+        ? Utils.itemsBefore(startTime)                                 // PointForecast in bounds -> filter items by time
         : []                                                           // PointForecast out of bounds -> remove it itself
       )],
     cachedForecast)
@@ -57,8 +57,8 @@ export function refreshFrom(gribFile: string): Bluebird<void> {
   }
 
   function createForecastLocations(bounds: Bounds, latIncrement: number, lngIncrement: number): Coords[] {
-    const latitudes = utils.rangeStep(bounds.swCorner.lat, bounds.neCorner.lat, latIncrement).map(roundTo1Decimal)
-    const longitudes = utils.rangeStep(bounds.swCorner.lng, bounds.neCorner.lng, lngIncrement).map(roundTo1Decimal)
+    const latitudes = Utils.rangeStep(bounds.swCorner.lat, bounds.neCorner.lat, latIncrement).map(roundTo1Decimal)
+    const longitudes = Utils.rangeStep(bounds.swCorner.lng, bounds.neCorner.lng, lngIncrement).map(roundTo1Decimal)
 
     return R.flatten<Coords>(latitudes.map(lat => longitudes.map(lng => ({lat, lng}))))
   }

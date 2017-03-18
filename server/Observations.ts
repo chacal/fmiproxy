@@ -1,5 +1,5 @@
 import {StationObservation, ObservationItem} from "./ForecastDomain"
-import utils = require('./utils')
+import * as Utils from './Utils'
 import L = require('partial.lenses')
 import R = require('ramda')
 import * as Bluebird from "bluebird"
@@ -12,8 +12,8 @@ export default function init(apiKey) {
 
   return {
 
-    getStationObservationForGeoid: (geoid: string): Bluebird<StationObservation> => utils.getFmiXMLasJson(observationUrlForGeoid(geoid)).then(parseStationObservation),
-    getStationObservationForPlace: (place: string): Bluebird<StationObservation> => utils.getFmiXMLasJson(observationUrlForPlace(place)).then(parseStationObservation)
+    getStationObservationForGeoid: (geoid: string): Bluebird<StationObservation> => Utils.getFmiXMLasJson(observationUrlForGeoid(geoid)).then(parseStationObservation),
+    getStationObservationForPlace: (place: string): Bluebird<StationObservation> => Utils.getFmiXMLasJson(observationUrlForPlace(place)).then(parseStationObservation)
 
   }
 
@@ -63,7 +63,7 @@ export default function init(apiKey) {
     function getStationInfoFromGmlPoint(gmlPoint: any): any {
       const name = gmlPoint['gml:name'][0]
       const position = gmlPoint['gml:pos'][0].trim()
-      return R.merge({ name }, utils.coordinatesFromPositionString(position) as any)
+      return R.merge({ name }, Utils.coordinatesFromPositionString(position) as any)
     }
 
     function trimmedLines(input: string): string[] { return input.trim().split(/\n/).map(line => line.trim()) }

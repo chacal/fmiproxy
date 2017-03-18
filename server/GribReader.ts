@@ -1,19 +1,19 @@
 import Victor = require('victor')
 import moment = require('moment')
-import utils = require('./utils')
+import * as Utils from './Utils'
 import {PointForecast, ForecastItem, Bounds} from './ForecastDomain'
 import R = require('ramda')
 import L = require('partial.lenses')
 import * as Bluebird from "bluebird"
 
 export function getPointForecastFromGrib(gribPath: string, latitude: number, longitude: number, startTime: Date = new Date(0)): Bluebird<PointForecast> {
-  return utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
+  return Utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
     .then(stdout => parseForecastTimeAndItems(stdout, latitude, longitude))
-    .then(forecast => L.remove(utils.itemsBefore(startTime), forecast))
+    .then(forecast => L.remove(Utils.itemsBefore(startTime), forecast))
 }
 
 export function getGribBounds(gribFile: string): Bluebird<Bounds> {
-  return utils.grib_get(['-p', 'latitudeOfFirstGridPointInDegrees,longitudeOfFirstGridPointInDegrees,latitudeOfLastGridPointInDegrees,longitudeOfLastGridPointInDegrees', gribFile])
+  return Utils.grib_get(['-p', 'latitudeOfFirstGridPointInDegrees,longitudeOfFirstGridPointInDegrees,latitudeOfLastGridPointInDegrees,longitudeOfLastGridPointInDegrees', gribFile])
     .then(output => output.split('\n')[0])
     .then(line => {
       const coords = line.trim().split(/ /).map(parseFloat)
@@ -22,12 +22,12 @@ export function getGribBounds(gribFile: string): Bluebird<Bounds> {
 }
 
 export function getGribTimestamp(gribFile: string): Bluebird<Date> {
-  return utils.grib_get(['-p', 'dataDate,dataTime', gribFile])
+  return Utils.grib_get(['-p', 'dataDate,dataTime', gribFile])
     .then(output => {
       const parts = output.split(/\n/)[0].split(/ /)
       const dataDate = parts[0]
       const dataTime = parts[1]
-      return utils.parseFullHourlDateFromGribItemDateAndTime(dataDate, dataTime)
+      return Utils.parseFullHourlDateFromGribItemDateAndTime(dataDate, dataTime)
     })
     .catch(() => undefined)
 }
@@ -63,7 +63,7 @@ function parseForecastTimeAndItems(gribGetOutput: string, lat: number, lng: numb
 
     return {
       name: datumName,
-      time: moment(utils.parseFullHourlDateFromGribItemDateAndTime(date, time)).clone().add(timeIncrement, 'h').toDate(),
+      time: moment(Utils.parseFullHourlDateFromGribItemDateAndTime(date, time)).clone().add(timeIncrement, 'h').toDate(),
       value: datumValue
     }
   }
