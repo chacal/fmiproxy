@@ -7,7 +7,7 @@ import * as Logging from './logging'
 const logger = Logging.consoleLogger
 const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
-import * as geocode from './reverse_geocode'
+import * as ObservationStations from './ObservationStations'
 import * as gribParser from './grib_get_parser'
 import Observations from './observations'
 const observations = Observations(FMIAPIKey)
@@ -22,13 +22,13 @@ app.use(compression())
 
 logger.info("Starting fmiproxy..")
 
-Bluebird.all([geocode.init(FMIAPIKey), gribDownloader.init(FMIAPIKey)])
+Bluebird.all([ObservationStations.init(FMIAPIKey), gribDownloader.init(FMIAPIKey)])
   .then(startServer)
 
 function startServer(): void {
   logger.info("Starting HTTP server..")
 
-  app.get(MOUNT_PREFIX + "/nearest-station", (req, res) => res.json(geocode.getNearestStation(req.query.lat, req.query.lon)))
+  app.get(MOUNT_PREFIX + "/nearest-station", (req, res) => res.json(ObservationStations.getNearestStation(req.query.lat, req.query.lon)))
 
   app.get(MOUNT_PREFIX + "/hirlam-forecast", (req, res, next) => {
     if(req.query.bounds && (req.query.lat || req.query.lon)) {
