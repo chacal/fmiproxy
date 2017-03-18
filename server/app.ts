@@ -2,15 +2,15 @@ import express = require('express')
 import cors = require('cors')
 import compression = require('compression')
 import Bluebird = require('bluebird')
-var morgan = require('morgan')
+import morgan = require('morgan')
 var logging = require('./logging.js')
-var logger = logging.console
-var FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
-var MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
-var geocode = require('./reverse_geocode.js')
+const logger = logging.console
+const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
+const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
+import * as geocode from './reverse_geocode'
 import * as gribParser from './grib_get_parser'
-var observations = require('./observations.js')(FMIAPIKey)
-var gribDownloader = require('./grib_downloader.js')
+var observations = require('./observations')(FMIAPIKey)
+import * as gribDownloader from './grib_downloader'
 import * as ForecastCache from './grib_forecast_cache'
 
 var app = express()
@@ -42,7 +42,7 @@ function startServer() {
         next(e)
       }
     } else if(req.query.lat && req.query.lon) {
-      gribParser.getPointForecastFromGrib(gribDownloader.gribFile, req.query.lat, req.query.lon, req.query.startTime)
+      gribParser.getPointForecastFromGrib(gribDownloader.latestGribFile, req.query.lat, req.query.lon, req.query.startTime)
         .then(function(forecast) { res.json(forecast).end() })
         .catch(next)
     } else {

@@ -42,12 +42,7 @@ export function init(apiKey): Bluebird<void> {
     })
 }
 
-function getNearestStation(latitude: number, longitude: number): NearestObservationStation {
+export function getNearestStation(latitude: number, longitude: number): NearestObservationStation {
   const nearest = geolib.findNearest({latitude, longitude}, observationStations)
   return R.merge({ distanceMeters: nearest.distance }, observationStations[nearest.key] as any)
-}
-
-module.exports = {
-  init,
-  getNearestStation
 }

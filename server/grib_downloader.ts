@@ -9,15 +9,15 @@ var logger = require('./logging.js').console
 import GribCache = require('./grib_forecast_cache')
 
 const gribDir = __dirname + '/../gribs'
-const latestGrib = gribDir + '/latest.grb'
+export const latestGribFile = gribDir + '/latest.grb'
 const gribUpdateCheckIntervalMillis = 10 * 60 * 1000
 
-function initDownloader(apiKey): Bluebird<void> {
+export function init(apiKey): Bluebird<void> {
   logger.info("Initializing grib downloader.")
 
   return fsExtraP.mkdirsAsync(gribDir)
     .then(updateGribIfNeeded)
-    .then(gribUpdated => { if(!gribUpdated) GribCache.refreshFrom(latestGrib) })  // No new grib downloaded -> need to refresh cache manually
+    .then(gribUpdated => { if(!gribUpdated) GribCache.refreshFrom(latestGribFile) })  // No new grib downloaded -> need to refresh cache manually
     .then(() => { scheduleGribUpdates() })  // Intentionally no 'return' here to launch the grib updates to the background
 
   function scheduleGribUpdates(): Bluebird<void> {
@@ -43,7 +43,7 @@ function initDownloader(apiKey): Bluebird<void> {
     })
   }
 
-  function getLatestDownloadedGribTimestamp(): Bluebird<Date> { return GribCache.getGribTimestamp(latestGrib) }
+  function getLatestDownloadedGribTimestamp(): Bluebird<Date> { return GribCache.getGribTimestamp(latestGribFile) }
 
   function getLatestPublishedGribTimestamp(): Bluebird<Date> {
     const gribMetadataUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
@@ -71,17 +71,11 @@ function initDownloader(apiKey): Bluebird<void> {
           console.warn("Got empty response when downloading grib. Retrying..")
           return Bluebird.delay(5000).then(downloadLatestGrib)
         } else {
-          return fsExtraP.writeFileAsync(latestGrib + '.tmp', gribFileBuffer)
-            .then(() => fsExtraP.renameAsync(latestGrib + '.tmp', latestGrib))
+          return fsExtraP.writeFileAsync(latestGribFile + '.tmp', gribFileBuffer)
+            .then(() => fsExtraP.renameAsync(latestGribFile + '.tmp', latestGribFile))
             .then(() => logger.info('Successfully downloaded new grib file! (' + gribFileBuffer.length + ' bytes)'))
-            .then(() => GribCache.refreshFrom(latestGrib))
+            .then(() => GribCache.refreshFrom(latestGribFile))
         }
       })
   }
-}
-
-
-module.exports = {
-  init: initDownloader,
-  gribFile: latestGrib
 }
