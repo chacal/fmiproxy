@@ -2,7 +2,7 @@ import requestP = require('request-promise')
 import geolib = require('geolib')
 import moment = require('moment')
 import utils = require('./utils')
-var logger = require('./logging.js').console
+import { consoleLogger as logger } from './logging'
 import xpath = require('xpath')
 import { DOMParser } from 'xmldom'
 import R = require('ramda')

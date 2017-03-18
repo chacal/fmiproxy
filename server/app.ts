@@ -3,8 +3,8 @@ import cors = require('cors')
 import compression = require('compression')
 import Bluebird = require('bluebird')
 import morgan = require('morgan')
-var logging = require('./logging.js')
-const logger = logging.console
+import * as Logging from './logging'
+const logger = Logging.consoleLogger
 const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
 import * as geocode from './reverse_geocode'
@@ -16,7 +16,7 @@ import * as ForecastCache from './grib_forecast_cache'
 
 const app = express()
 app.set('port', (process.env.PORT || 8000))
-app.use(morgan(logging.requestLoggingFormat, { stream: logging.fileLoggerStream }))
+app.use(morgan(Logging.requestLoggingFormat, { stream: Logging.fileLoggerStream }))
 app.use(cors())
 app.use(compression())
 

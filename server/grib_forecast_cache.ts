@@ -7,7 +7,7 @@ const accessAsync = Bluebird.promisify<void, string, number>(fs.access)
 import * as gribParser from './grib_get_parser'
 import geolib = require('geolib')
 import moment = require('moment')
-var logger = require('./logging').console
+import { consoleLogger as logger } from './logging'
 import utils = require('./utils')
 import R = require('ramda')
 import L = require('partial.lenses')
