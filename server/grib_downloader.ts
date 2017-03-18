@@ -4,7 +4,7 @@ import fsExtraP = require('fs-extra-promise')
 import L = require('partial.lenses')
 import moment = require('moment')
 import utils = require('./utils')
-import { consoleLogger as logger } from './logging'
+import { consoleLogger as logger } from './Logging'
 
 import * as GribReader from './GribReader'
 import GribCache = require('./grib_forecast_cache')

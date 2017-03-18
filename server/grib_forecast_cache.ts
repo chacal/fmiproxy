@@ -4,7 +4,7 @@ import Bluebird = require("bluebird")
 import * as GribReader from './GribReader'
 import geolib = require('geolib')
 import moment = require('moment')
-import { consoleLogger as logger } from './logging'
+import { consoleLogger as logger } from './Logging'
 import utils = require('./utils')
 import R = require('ramda')
 import L = require('partial.lenses')

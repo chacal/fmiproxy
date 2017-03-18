@@ -3,7 +3,7 @@ import cors = require('cors')
 import compression = require('compression')
 import Bluebird = require('bluebird')
 import morgan = require('morgan')
-import * as Logging from './logging'
+import * as Logging from './Logging'
 const logger = Logging.consoleLogger
 const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
