@@ -1,7 +1,7 @@
 import Victor = require('victor')
 import moment = require('moment')
 import utils = require('./utils')
-import { PointForecast, ForecastItem } from './ForecastDomain'
+import {PointForecast, ForecastItem, Bounds} from './ForecastDomain'
 import R = require('ramda')
 import L = require('partial.lenses')
 import * as Bluebird from "bluebird"
@@ -11,6 +11,16 @@ export function getPointForecastFromGrib(gribPath: string, latitude: number, lon
     .then(stdout => parseForecastTimeAndItems(stdout, latitude, longitude))
     .then(forecast => L.remove(utils.itemsBefore(startTime), forecast))
 }
+
+export function getGribBounds(gribFile: string): Bluebird<Bounds> {
+  return utils.grib_get(['-p', 'latitudeOfFirstGridPointInDegrees,longitudeOfFirstGridPointInDegrees,latitudeOfLastGridPointInDegrees,longitudeOfLastGridPointInDegrees', gribFile])
+    .then(output => output.split('\n')[0])
+    .then(line => {
+      const coords = line.trim().split(/ /).map(parseFloat)
+      return {swCorner: {lat: coords[0], lng: coords[1]}, neCorner: {lat: coords[2], lng: coords[3]}}
+    })
+}
+
 
 
 /*

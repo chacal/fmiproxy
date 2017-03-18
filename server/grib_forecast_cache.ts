@@ -48,7 +48,7 @@ export function refreshFrom(gribFile: string): Bluebird<void> {
   const startTime = new Date()
   logger.info('Refreshing forecast cache..')
   return getGribTimestamp(gribFile)
-    .then(timestamp => getGribBounds(gribFile)
+    .then(timestamp => GribReader.getGribBounds(gribFile)
       .then(bounds => createForecastLocations(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT))
       .then(forecastLocations => getPointForecastsForLocations(forecastLocations, gribFile))
       .then(pointForecasts => { cachedForecast = { publishTime: timestamp, pointForecasts } })
@@ -68,15 +68,6 @@ export function refreshFrom(gribFile: string): Bluebird<void> {
 }
 
 
-
-function getGribBounds(gribFile: string): Bluebird<Bounds> {
-  return gribGet(['-p', 'latitudeOfFirstGridPointInDegrees,longitudeOfFirstGridPointInDegrees,latitudeOfLastGridPointInDegrees,longitudeOfLastGridPointInDegrees', gribFile])
-    .then(output => output.split('\n')[0])
-    .then(line => {
-      const coords = line.trim().split(/ /).map(parseFloat)
-      return {swCorner: {lat: coords[0], lng: coords[1]}, neCorner: {lat: coords[2], lng: coords[3]}}
-    })
-}
 
 export function getGribTimestamp(gribFile: string): Bluebird<Date> {
   return accessAsync(gribFile, fs.constants.R_OK)
