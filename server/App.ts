@@ -3,16 +3,18 @@ import cors = require('cors')
 import compression = require('compression')
 import Bluebird = require('bluebird')
 import morgan = require('morgan')
+
 import * as Logging from './Logging'
+import * as ObservationStations from './ObservationStations'
+import * as GribReader from './GribReader'
+import * as GribDownloader from './GribDownloader'
+import * as ForecastCache from './ForecastCache'
+import Observations from './Observations'
+
 const logger = Logging.consoleLogger
 const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
-import * as ObservationStations from './ObservationStations'
-import * as GribReader from './GribReader'
-import Observations from './Observations'
 const observations = Observations(FMIAPIKey)
-import * as GribDownloader from './GribDownloader'
-import * as ForecastCache from './ForecastCache'
 
 const app = express()
 app.set('port', (process.env.PORT || 8000))

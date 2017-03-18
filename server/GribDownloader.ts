@@ -3,15 +3,16 @@ import requestP = require('request-promise')
 import fsExtraP = require('fs-extra-promise')
 import L = require('partial.lenses')
 import moment = require('moment')
+
 import * as Utils from './Utils'
+import * as GribReader from './GribReader'
+import * as ForecastCache from './ForecastCache'
 import { consoleLogger as logger } from './Logging'
 
-import * as GribReader from './GribReader'
-import ForecastCache = require('./ForecastCache')
-
-const gribDir = __dirname + '/../gribs'
-export const latestGribFile = gribDir + '/latest.grb'
 const gribUpdateCheckIntervalMillis = 10 * 60 * 1000
+const gribDir = __dirname + '/../gribs'
+
+export const latestGribFile = gribDir + '/latest.grb'
 
 export function init(apiKey): Bluebird<void> {
   logger.info("Initializing grib downloader.")

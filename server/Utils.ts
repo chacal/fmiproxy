@@ -1,11 +1,12 @@
-import {ForecastItem, Coords} from "./ForecastDomain"
+import Bluebird = require('bluebird')
 import child_process = require('child_process')
 import moment = require('moment')
 import requestP = require('request-promise')
 import L = require('partial.lenses')
 import R = require('ramda')
-import Bluebird = require('bluebird')
-import Moment = moment.Moment
+
+import {ForecastItem, Coords} from "./ForecastDomain"
+
 const parseXml2JsAsync = Bluebird.promisify(require('xml2js').parseString)
 
 export function grib_get(params: string[]): Bluebird<string> {

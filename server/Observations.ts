@@ -1,8 +1,9 @@
+import Bluebird = require("bluebird")
+import R = require('ramda')
+import L = require('partial.lenses')
+
 import {StationObservation, ObservationItem} from "./ForecastDomain"
 import * as Utils from './Utils'
-import L = require('partial.lenses')
-import R = require('ramda')
-import * as Bluebird from "bluebird"
 
 export default function init(apiKey) {
   const baseUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::observations::weather::multipointcoverage&parameters=temperature,windspeedms,windgust,winddirection,pressure'

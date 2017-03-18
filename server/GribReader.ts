@@ -1,10 +1,11 @@
+import Bluebird = require("bluebird")
 import Victor = require('victor')
 import moment = require('moment')
-import * as Utils from './Utils'
-import {PointForecast, ForecastItem, Bounds} from './ForecastDomain'
 import R = require('ramda')
 import L = require('partial.lenses')
-import * as Bluebird from "bluebird"
+
+import {PointForecast, ForecastItem, Bounds} from './ForecastDomain'
+import * as Utils from './Utils'
 
 export function getPointForecastFromGrib(gribPath: string, latitude: number, longitude: number, startTime: Date = new Date(0)): Bluebird<PointForecast> {
   return Utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])

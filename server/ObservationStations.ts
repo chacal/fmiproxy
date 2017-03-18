@@ -1,13 +1,14 @@
+import Bluebird = require("bluebird")
 import requestP = require('request-promise')
 import geolib = require('geolib')
 import moment = require('moment')
+import xpath = require('xpath')
+import R = require('ramda')
+import { DOMParser } from 'xmldom'
+
+import {ObservationStation, NearestObservationStation} from "./ForecastDomain"
 import * as Utils from './Utils'
 import { consoleLogger as logger } from './Logging'
-import xpath = require('xpath')
-import { DOMParser } from 'xmldom'
-import R = require('ramda')
-import {ObservationStation, NearestObservationStation} from "./ForecastDomain"
-import Bluebird = require("bluebird")
 
 let observationStations: ObservationStation[] = []
 

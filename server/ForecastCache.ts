@@ -1,13 +1,13 @@
-import {PointForecast, Coords, AreaForecast, Bounds, ForecastItem} from "./ForecastDomain"
-import _ = require('lodash')
 import Bluebird = require("bluebird")
-import * as GribReader from './GribReader'
 import geolib = require('geolib')
 import moment = require('moment')
-import { consoleLogger as logger } from './Logging'
-import * as Utils from './Utils'
 import R = require('ramda')
 import L = require('partial.lenses')
+
+import {PointForecast, Coords, AreaForecast, Bounds, ForecastItem} from "./ForecastDomain"
+import * as GribReader from './GribReader'
+import * as Utils from './Utils'
+import { consoleLogger as logger } from './Logging'
 
 const CPU_COUNT = require('os').cpus().length
 const LAT_GRID_INCREMENT = 0.2
