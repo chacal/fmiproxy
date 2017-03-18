@@ -9,7 +9,7 @@ const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
 import * as ObservationStations from './ObservationStations'
 import * as GribReader from './GribReader'
-import Observations from './observations'
+import Observations from './Observations'
 const observations = Observations(FMIAPIKey)
 import * as gribDownloader from './grib_downloader'
 import * as ForecastCache from './grib_forecast_cache'
