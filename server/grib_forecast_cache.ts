@@ -4,7 +4,7 @@ import _ = require('lodash')
 import Bluebird = require("bluebird")
 import fs = require('fs')
 const accessAsync = Bluebird.promisify<void, string, number>(fs.access)
-import * as gribParser from './grib_get_parser'
+import * as GribReader from './GribReader'
 import geolib = require('geolib')
 import moment = require('moment')
 import { consoleLogger as logger } from './logging'
@@ -56,7 +56,7 @@ export function refreshFrom(gribFile: string): Bluebird<void> {
     )
 
   function getPointForecastsForLocations(locations: Coords[], gribFile: string): Bluebird<PointForecast[]> {
-    return Bluebird.map(locations, location => gribParser.getPointForecastFromGrib(gribFile, location.lat, location.lng), {concurrency: CPU_COUNT})
+    return Bluebird.map(locations, location => GribReader.getPointForecastFromGrib(gribFile, location.lat, location.lng), {concurrency: CPU_COUNT})
   }
 
   function createForecastLocations(bounds: Bounds, latIncrement: number, lngIncrement: number): Coords[] {

@@ -8,7 +8,7 @@ const logger = Logging.consoleLogger
 const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
 import * as ObservationStations from './ObservationStations'
-import * as gribParser from './grib_get_parser'
+import * as GribReader from './GribReader'
 import Observations from './observations'
 const observations = Observations(FMIAPIKey)
 import * as gribDownloader from './grib_downloader'
@@ -41,7 +41,7 @@ function startServer(): void {
         next(e)
       }
     } else if(req.query.lat && req.query.lon) {
-      gribParser.getPointForecastFromGrib(gribDownloader.latestGribFile, req.query.lat, req.query.lon, req.query.startTime)
+      GribReader.getPointForecastFromGrib(gribDownloader.latestGribFile, req.query.lat, req.query.lon, req.query.startTime)
         .then(pf => res.json(pf))
         .catch(next)
     } else {
