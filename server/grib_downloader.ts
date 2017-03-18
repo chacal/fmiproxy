@@ -7,7 +7,7 @@ import utils = require('./utils')
 import { consoleLogger as logger } from './Logging'
 
 import * as GribReader from './GribReader'
-import GribCache = require('./grib_forecast_cache')
+import ForecastCache = require('./ForecastCache')
 
 const gribDir = __dirname + '/../gribs'
 export const latestGribFile = gribDir + '/latest.grb'
@@ -18,7 +18,7 @@ export function init(apiKey): Bluebird<void> {
 
   return fsExtraP.mkdirsAsync(gribDir)
     .then(updateGribIfNeeded)
-    .then(gribUpdated => { if(!gribUpdated) GribCache.refreshFrom(latestGribFile) })  // No new grib downloaded -> need to refresh cache manually
+    .then(gribUpdated => { if(!gribUpdated) ForecastCache.refreshFrom(latestGribFile) })  // No new grib downloaded -> need to refresh cache manually
     .then(() => { scheduleGribUpdates() })  // Intentionally no 'return' here to launch the grib updates to the background
 
   function scheduleGribUpdates(): Bluebird<void> {
@@ -75,7 +75,7 @@ export function init(apiKey): Bluebird<void> {
           return fsExtraP.writeFileAsync(latestGribFile + '.tmp', gribFileBuffer)
             .then(() => fsExtraP.renameAsync(latestGribFile + '.tmp', latestGribFile))
             .then(() => logger.info('Successfully downloaded new grib file! (' + gribFileBuffer.length + ' bytes)'))
-            .then(() => GribCache.refreshFrom(latestGribFile))
+            .then(() => ForecastCache.refreshFrom(latestGribFile))
         }
       })
   }

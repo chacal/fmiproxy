@@ -12,7 +12,7 @@ import * as GribReader from './GribReader'
 import Observations from './Observations'
 const observations = Observations(FMIAPIKey)
 import * as gribDownloader from './grib_downloader'
-import * as ForecastCache from './grib_forecast_cache'
+import * as ForecastCache from './ForecastCache'
 
 const app = express()
 app.set('port', (process.env.PORT || 8000))
