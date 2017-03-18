@@ -4,7 +4,7 @@ import L = require('partial.lenses')
 import R = require('ramda')
 import * as Bluebird from "bluebird"
 
-module.exports = function(apiKey) {
+export default function init(apiKey) {
   const baseUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::observations::weather::multipointcoverage&parameters=temperature,windspeedms,windgust,winddirection,pressure'
 
   const observationUrlForGeoid = geoid => baseUrl + '&geoid=' + geoid

@@ -9,7 +9,8 @@ const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
 import * as geocode from './reverse_geocode'
 import * as gribParser from './grib_get_parser'
-var observations = require('./observations')(FMIAPIKey)
+import Observations from './observations'
+const observations = Observations(FMIAPIKey)
 import * as gribDownloader from './grib_downloader'
 import * as ForecastCache from './grib_forecast_cache'
 
