@@ -11,7 +11,7 @@ import * as ObservationStations from './ObservationStations'
 import * as GribReader from './GribReader'
 import Observations from './Observations'
 const observations = Observations(FMIAPIKey)
-import * as gribDownloader from './grib_downloader'
+import * as GribDownloader from './GribDownloader'
 import * as ForecastCache from './ForecastCache'
 
 const app = express()
@@ -22,7 +22,7 @@ app.use(compression())
 
 logger.info("Starting fmiproxy..")
 
-Bluebird.all([ObservationStations.init(FMIAPIKey), gribDownloader.init(FMIAPIKey)])
+Bluebird.all([ObservationStations.init(FMIAPIKey), GribDownloader.init(FMIAPIKey)])
   .then(startServer)
 
 function startServer(): void {
@@ -41,7 +41,7 @@ function startServer(): void {
         next(e)
       }
     } else if(req.query.lat && req.query.lon) {
-      GribReader.getPointForecastFromGrib(gribDownloader.latestGribFile, req.query.lat, req.query.lon, req.query.startTime)
+      GribReader.getPointForecastFromGrib(GribDownloader.latestGribFile, req.query.lat, req.query.lon, req.query.startTime)
         .then(pf => res.json(pf))
         .catch(next)
     } else {
