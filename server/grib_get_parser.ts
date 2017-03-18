@@ -71,7 +71,3 @@ function parseForecastTimeAndItems(gribGetOutput: string, lat: number, lng: numb
 
   function getNonEmptySplittedStrings(s: string, splitter: RegExp): string[] { return s.split(splitter).filter(line => line.trim() !== '') }
 }
-
-module.exports = {
-  getPointForecastFromGrib
-}
