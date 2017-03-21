@@ -15,7 +15,9 @@ const LNG_GRID_INCREMENT = 0.5
 let cachedForecast: AreaForecast
 
 
-export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): AreaForecast {
+export function getAreaForecast(): AreaForecast { return cachedForecast }
+
+export function getBoundedAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): AreaForecast {
   const corners = [
     {lat: bounds.swCorner.lat, lng: bounds.swCorner.lng},
     {lat: bounds.neCorner.lat, lng: bounds.swCorner.lng},

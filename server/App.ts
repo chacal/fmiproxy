@@ -38,7 +38,7 @@ function startServer(): void {
     } else if(req.query.bounds) {
       try {
         const coords = req.query.bounds.trim().split(',').map(parseFloat)
-        res.json(ForecastCache.getAreaForecast({ swCorner: { lat: coords[0], lng: coords[1] }, neCorner: { lat: coords[2], lng: coords[3] } }, req.query.startTime))
+        res.json(ForecastCache.getBoundedAreaForecast({ swCorner: { lat: coords[0], lng: coords[1] }, neCorner: { lat: coords[2], lng: coords[3] } }, req.query.startTime))
       } catch (e) {
         next(e)
       }
@@ -47,7 +47,7 @@ function startServer(): void {
         .then(pf => res.json(pf))
         .catch(next)
     } else {
-      res.status(400).json({message: 'Either bounds or lat & lon must be given!'})
+      res.json(ForecastCache.getAreaForecast())
     }
   })
 
