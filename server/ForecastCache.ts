@@ -32,10 +32,6 @@ export function getAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): 
     cachedForecast)
 
 
-  function isItemBefore(time: Date) {
-    return (item: ForecastItem) => moment(item.time).isBefore(moment(time))
-  }
-
   function forecastInBounds(forecast: PointForecast, corners: Coords[]): boolean {
     return geolib.isPointInside({latitude: forecast.lat, longitude: forecast.lng}, corners)
   }
