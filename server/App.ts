@@ -4,6 +4,8 @@ import compression = require('compression')
 import Bluebird = require('bluebird')
 import morgan = require('morgan')
 import expressValidator = require('express-validator')
+import R = require('ramda')
+import L = require('partial.lenses')
 
 import * as Logging from './Logging'
 import * as ObservationStations from './ObservationStations'
@@ -11,6 +13,7 @@ import * as GribReader from './GribReader'
 import * as GribDownloader from './GribDownloader'
 import * as ForecastCache from './ForecastCache'
 import Observations from './Observations'
+import {StationObservation} from "./ForecastDomain"
 
 const logger = Logging.consoleLogger
 const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
@@ -62,11 +65,11 @@ function startServer(): void {
       res.status(400).json({message: 'Use either geiod or place, not both!'})
     } else if(req.query.geoid) {
       observations.getStationObservationForGeoid(req.query.geoid)
-        .then(observation => res.json(observation))
+        .then(observation => res.json(req.query.latest ? onlyLatest(observation) : observation))
         .catch(next)
     } else if(req.query.place) {
       observations.getStationObservationForPlace(req.query.place)
-        .then(observations => res.json(observations))
+        .then(observation => res.json(req.query.latest ? onlyLatest(observation) : observation))
         .catch(next)
     } else {
       res.status(400).json({message: 'Either geiod or place must be given!'})
@@ -79,7 +82,7 @@ function startServer(): void {
         const nearestStation = ObservationStations.getNearestStation(req.query.lat, req.query.lon)
         return observations.getStationObservationForGeoid(nearestStation.geoid)
       })
-      .then(observation => res.json(observation))
+      .then(observation => res.json(req.query.latest ? onlyLatest(observation) : observation))
       .catch(next)
   })
 
@@ -100,4 +103,6 @@ function startServer(): void {
     return req.getValidationResult()
       .then(result => result.throw())
   }
+
+  function onlyLatest(observation: StationObservation): StationObservation { return L.modify('observations', R.pipe(R.sortBy(R.prop('time')), R.last), observation) }
 }
