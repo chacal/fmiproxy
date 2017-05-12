@@ -30,6 +30,7 @@
     "compression": "^1.6.0",
     "cors": "^2.7.1",
     "express": "^4.13.3",
+    "express-validator": "^3.2.0",
     "fs-extra-promise": "^0.4.1",
     "geolib": "^2.0.18",
     "lodash": "^4.17.4",

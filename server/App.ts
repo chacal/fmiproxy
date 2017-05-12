@@ -3,6 +3,7 @@ import cors = require('cors')
 import compression = require('compression')
 import Bluebird = require('bluebird')
 import morgan = require('morgan')
+import expressValidator = require('express-validator')
 
 import * as Logging from './Logging'
 import * as ObservationStations from './ObservationStations'
@@ -21,6 +22,7 @@ app.set('port', (process.env.PORT || 8000))
 app.use(morgan(Logging.requestLoggingFormat, { stream: Logging.fileLoggerStream }))
 app.use(cors())
 app.use(compression())
+app.use(expressValidator())
 
 logger.info("Starting fmiproxy..")
 
@@ -30,7 +32,11 @@ Bluebird.all([ObservationStations.init(FMIAPIKey), GribDownloader.init(FMIAPIKey
 function startServer(): void {
   logger.info("Starting HTTP server..")
 
-  app.get(MOUNT_PREFIX + "/nearest-station", (req, res) => res.json(ObservationStations.getNearestStation(req.query.lat, req.query.lon)))
+  app.get(MOUNT_PREFIX + "/nearest-station", (req, res, next) => {
+    checkLatLonParams(req)
+      .then(() => res.json(ObservationStations.getNearestStation(req.query.lat, req.query.lon)))
+      .catch(next)
+  })
 
   app.get(MOUNT_PREFIX + "/hirlam-forecast", (req, res, next) => {
     if(req.query.bounds && (req.query.lat || req.query.lon)) {
@@ -69,12 +75,19 @@ function startServer(): void {
 
   app.listen(app.get('port'), () => logger.info("FMI proxy is running at localhost:" + app.get('port')))
 
-  app.use((err, req, res) => {
-    logger.error(err)
+  app.use((err, req, res, next) => {
+    logger.error(err.mapped() || err)
     res.status(err.status || 500)
     res.json({
       message: err.message,
-      error: err
+      error: err.mapped() || err
     })
   })
+
+  function checkLatLonParams(req) {
+    req.check('lat').notEmpty().isDecimal()
+    req.check('lon').notEmpty().isDecimal()
+    return req.getValidationResult()
+      .then(result => result.throw())
+  }
 }
