@@ -65,11 +65,11 @@ function startServer(): void {
       res.status(400).json({message: 'Use either geiod or place, not both!'})
     } else if(req.query.geoid) {
       observations.getStationObservationForGeoid(req.query.geoid)
-        .then(observation => res.json(req.query.latest ? onlyLatest(observation) : observation))
+        .then(observation => respondWithObservation(req, res, observation))
         .catch(next)
     } else if(req.query.place) {
       observations.getStationObservationForPlace(req.query.place)
-        .then(observation => res.json(req.query.latest ? onlyLatest(observation) : observation))
+        .then(observation => respondWithObservation(req, res, observation))
         .catch(next)
     } else {
       res.status(400).json({message: 'Either geiod or place must be given!'})
@@ -82,7 +82,7 @@ function startServer(): void {
         const nearestStation = ObservationStations.getNearestStation(req.query.lat, req.query.lon)
         return observations.getStationObservationForGeoid(nearestStation.geoid)
       })
-      .then(observation => res.json(req.query.latest ? onlyLatest(observation) : observation))
+      .then(observation => respondWithObservation(req, res, observation))
       .catch(next)
   })
 
@@ -104,5 +104,9 @@ function startServer(): void {
       .then(result => result.throw())
   }
 
-  function onlyLatest(observation: StationObservation): StationObservation { return L.modify('observations', R.pipe(R.sortBy(R.prop('time')), R.last), observation) }
+  function respondWithObservation(req, res, observation: StationObservation) {
+    res.json(req.query.latest ? onlyLatest(observation) : observation)
+
+    function onlyLatest(observation: StationObservation): StationObservation { return L.modify('observations', R.pipe(R.sortBy(R.prop('time')), R.last), observation) }
+  }
 }
