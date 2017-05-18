@@ -42,7 +42,6 @@
     "request": "^2.81.0",
     "request-promise": "^4.1.1",
     "typescript": "^2.2.1",
-    "validator": "^7.0.0",
     "victor": "^1.1.0",
     "winston": "^2.2.0",
     "winston-daily-rotate-file": "^1.0.1",
