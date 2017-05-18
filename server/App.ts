@@ -6,6 +6,7 @@ import morgan = require('morgan')
 import expressValidator = require('express-validator')
 import R = require('ramda')
 import L = require('partial.lenses')
+import Validator = require('validator')
 
 import * as Logging from './Logging'
 import * as ObservationStations from './ObservationStations'
@@ -37,7 +38,7 @@ function startServer(): void {
 
   app.get(MOUNT_PREFIX + "/nearest-station", (req, res, next) => {
     checkLatLonParams(req)
-      .then(() => res.json(ObservationStations.getNearestStation(req.query.lat, req.query.lon)))
+      .then(() => res.json(ObservationStations.getNearestStation(req.query.lat, req.query.lon, Validator.toBoolean(req.query.marineOnly))))
       .catch(next)
   })
 
@@ -79,7 +80,7 @@ function startServer(): void {
   app.get(MOUNT_PREFIX + "/nearest-observations", (req, res, next) => {
     checkLatLonParams(req)
       .then(() => {
-        const nearestStation = ObservationStations.getNearestStation(req.query.lat, req.query.lon)
+        const nearestStation = ObservationStations.getNearestStation(req.query.lat, req.query.lon, Validator.toBoolean(req.query.marineOnly))
         return observations.getStationObservationForGeoid(nearestStation.geoid)
       })
       .then(observation => respondWithObservation(req, res, observation))
