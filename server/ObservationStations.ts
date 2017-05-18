@@ -9,8 +9,10 @@ import { DOMParser } from 'xmldom'
 import {ObservationStation, NearestObservationStation} from "./ForecastDomain"
 import * as Utils from './Utils'
 import { consoleLogger as logger } from './Logging'
+const marineStationNames = require('../marine-observation-stations').map(R.prop('name'))
 
 let observationStations: ObservationStation[] = []
+let marineObservationStations: ObservationStation[] = []
 
 export function init(apiKey): Bluebird<void> {
   logger.info("Updating observation station cache..")
@@ -39,11 +41,13 @@ export function init(apiKey): Bluebird<void> {
     })
     .then(stations => {
       observationStations = stations
-      logger.info("Loaded " + stations.length + " observation stations.")
+      marineObservationStations = observationStations.filter(s => R.contains(s.name, marineStationNames))
+      logger.info(`Loaded ${stations.length} observation stations (${marineObservationStations.length} marine).`)
     })
 }
 
-export function getNearestStation(latitude: number, longitude: number): NearestObservationStation {
-  const nearest = geolib.findNearest({latitude, longitude}, observationStations)
-  return R.merge({ distanceMeters: nearest.distance }, observationStations[nearest.key] as any)
+export function getNearestStation(latitude: number, longitude: number, marineStationsOnly: boolean = false): NearestObservationStation {
+  const haystack = marineStationsOnly ? marineObservationStations : observationStations
+  const nearest = geolib.findNearest({latitude, longitude}, haystack)
+  return R.merge({ distanceMeters: nearest.distance }, haystack[nearest.key] as any)
 }
