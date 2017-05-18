@@ -90,11 +90,11 @@ function startServer(): void {
   app.listen(app.get('port'), () => logger.info("FMI proxy is running at localhost:" + app.get('port')))
 
   app.use((err, req, res, next) => {
-    logger.error(err.mapped() || err)
+    logger.error(err.mapped ? err.mapped() : err)
     res.status(err.status || 500)
     res.json({
       message: err.message,
-      error: err.mapped() || err
+      error: err.mapped ? err.mapped() : err
     })
   })
 
