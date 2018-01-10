@@ -47,7 +47,7 @@ function startServer(): void {
     } else if(req.query.bounds) {
       try {
         const coords = req.query.bounds.trim().split(',').map(parseFloat)
-        res.json(ForecastCache.getBoundedAreaForecast({ swCorner: { lat: coords[0], lng: coords[1] }, neCorner: { lat: coords[2], lng: coords[3] } }, req.query.startTime))
+        res.json(ForecastCache.getBoundedAreaForecast({ swCorner: { latitude: coords[0], longitude: coords[1] }, neCorner: { latitude: coords[2], longitude: coords[3] } }, req.query.startTime))
       } catch (e) {
         next(e)
       }

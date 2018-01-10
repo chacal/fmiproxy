@@ -18,7 +18,7 @@ export function getGribBounds(gribFile: string): Bluebird<Bounds> {
     .then(output => output.split('\n')[0])
     .then(line => {
       const coords = line.trim().split(/ /).map(parseFloat)
-      return {swCorner: {lat: coords[0], lng: coords[1]}, neCorner: {lat: coords[2], lng: coords[3]}}
+      return {swCorner: {latitude: coords[0], longitude: coords[1]}, neCorner: {latitude: coords[2], longitude: coords[3]}}
     })
 }
 
@@ -37,14 +37,14 @@ export function getGribTimestamp(gribFile: string): Bluebird<Date> {
 /*
   For forecast format see ForecastItem
  */
-function parseForecastTimeAndItems(gribGetOutput: string, lat: number, lng: number): PointForecast {
+function parseForecastTimeAndItems(gribGetOutput: string, latitude: number, longitude: number): PointForecast {
   const lines = getNonEmptySplittedStrings(gribGetOutput, /\n/)
   const rawGribData: RawGribDatum[] = lines.map(parseGribLine)
   const gribDataGroupedByTime: RawGribDatum[][] = R.pipe(R.groupBy(R.prop('time')), R.values)(rawGribData) as RawGribDatum[][]
   const forecastItems = gribDataGroupedByTime.map(createForecastItem)
   const sortedForecastItems = R.sortBy(item => item.time.getTime(), forecastItems)
 
-  return { publishTime: sortedForecastItems[0].time, lat, lng, forecastItems: sortedForecastItems }
+  return { publishTime: sortedForecastItems[0].time, latitude, longitude, forecastItems: sortedForecastItems }
 
 
   interface RawGribDatum {

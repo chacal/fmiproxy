@@ -19,10 +19,10 @@ export function getAreaForecast(): AreaForecast { return cachedForecast }
 
 export function getBoundedAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): AreaForecast {
   const corners = [
-    {lat: bounds.swCorner.lat, lng: bounds.swCorner.lng},
-    {lat: bounds.neCorner.lat, lng: bounds.swCorner.lng},
-    {lat: bounds.neCorner.lat, lng: bounds.neCorner.lng},
-    {lat: bounds.swCorner.lat, lng: bounds.neCorner.lng}
+    {latitude: bounds.swCorner.latitude, longitude: bounds.swCorner.longitude},
+    {latitude: bounds.neCorner.latitude, longitude: bounds.swCorner.longitude},
+    {latitude: bounds.neCorner.latitude, longitude: bounds.neCorner.longitude},
+    {latitude: bounds.swCorner.latitude, longitude: bounds.neCorner.longitude}
   ]
 
   return L.remove(['pointForecasts',
@@ -35,7 +35,7 @@ export function getBoundedAreaForecast(bounds: Bounds, startTime: Date = new Dat
 
 
   function forecastInBounds(forecast: PointForecast, corners: Coords[]): boolean {
-    return geolib.isPointInside({latitude: forecast.lat, longitude: forecast.lng}, corners)
+    return geolib.isPointInside({latitude: forecast.latitude, longitude: forecast.longitude}, corners)
   }
 }
 
@@ -51,14 +51,14 @@ export function refreshFrom(gribFile: string): Bluebird<void> {
     )
 
   function getPointForecastsForLocations(locations: Coords[], gribFile: string): Bluebird<PointForecast[]> {
-    return Bluebird.map(locations, location => GribReader.getPointForecastFromGrib(gribFile, location.lat, location.lng), {concurrency: CPU_COUNT})
+    return Bluebird.map(locations, location => GribReader.getPointForecastFromGrib(gribFile, location.latitude, location.longitude), {concurrency: CPU_COUNT})
   }
 
   function createForecastLocations(bounds: Bounds, latIncrement: number, lngIncrement: number): Coords[] {
-    const latitudes = Utils.rangeStep(bounds.swCorner.lat, bounds.neCorner.lat, latIncrement).map(roundTo1Decimal)
-    const longitudes = Utils.rangeStep(bounds.swCorner.lng, bounds.neCorner.lng, lngIncrement).map(roundTo1Decimal)
+    const latitudes = Utils.rangeStep(bounds.swCorner.latitude, bounds.neCorner.latitude, latIncrement).map(roundTo1Decimal)
+    const longitudes = Utils.rangeStep(bounds.swCorner.longitude, bounds.neCorner.longitude, lngIncrement).map(roundTo1Decimal)
 
-    return R.flatten<Coords>(latitudes.map(lat => longitudes.map(lng => ({lat, lng}))))
+    return R.flatten<Coords>(latitudes.map(latitude => longitudes.map(longitude => ({latitude, longitude}))))
   }
 }
 

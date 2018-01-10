@@ -22,8 +22,8 @@ export interface Bounds {
 }
 
 export interface Coords {
-  lat: number,
-  lng: number
+  latitude: number,
+  longitude: number
 }
 
 export interface ObservationItem {

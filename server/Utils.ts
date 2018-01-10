@@ -33,7 +33,7 @@ export function getFmiXMLasJson(url: string): Bluebird<any> {
 
 export function coordinatesFromPositionString(position: string): Coords {
   const parts = position.trim().split(/ /)
-  return { lat: parseFloat(parts[0]), lng: parseFloat(parts[1]) }
+  return { latitude: parseFloat(parts[0]), longitude: parseFloat(parts[1]) }
 }
 
 export function parseFullHourlDateFromGribItemDateAndTime(date: string, time: string): Date {
