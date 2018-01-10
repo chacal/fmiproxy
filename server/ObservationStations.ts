@@ -48,6 +48,6 @@ export function init(apiKey): Bluebird<void> {
 
 export function getNearestStation(latitude: number, longitude: number, marineStationsOnly: boolean = false): NearestObservationStation {
   const haystack = marineStationsOnly ? marineObservationStations : observationStations
-  const nearest = geolib.findNearest({latitude, longitude}, haystack)
+  const nearest = geolib.findNearest({latitude, longitude}, haystack) as any  // Typings for geolib are wrong
   return R.merge({ distanceMeters: nearest.distance }, haystack[nearest.key] as any)
 }
