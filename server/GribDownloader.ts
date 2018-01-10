@@ -1,8 +1,8 @@
 import Bluebird = require('bluebird')
-import requestP = require('request-promise')
 import fsExtraP = require('fs-extra-promise')
 import L = require('partial.lenses')
 import moment = require('moment')
+import request = require('request')
 
 import * as Utils from './Utils'
 import * as GribReader from './GribReader'
@@ -67,8 +67,8 @@ export function init(apiKey): Bluebird<void> {
   function downloadLatestGrib(): Bluebird<void> {
     const gribUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
     logger.info("Downloading latest HIRLAM grib..")
-    return requestP.get(gribUrl, {encoding: null}).promise()
-      .then(gribFileBuffer => {
+    return Bluebird.fromCallback(cb => request.get(gribUrl, {encoding: null}, cb), {multiArgs: true})
+      .then(([res, gribFileBuffer]) => {
         if(gribFileBuffer.length === 0) {
           console.warn("Got empty response when downloading grib. Retrying..")
           return Bluebird.delay(5000).then(downloadLatestGrib)

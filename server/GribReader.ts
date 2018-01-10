@@ -40,9 +40,9 @@ export function getGribTimestamp(gribFile: string): Bluebird<Date> {
 function parseForecastTimeAndItems(gribGetOutput: string, lat: number, lng: number): PointForecast {
   const lines = getNonEmptySplittedStrings(gribGetOutput, /\n/)
   const rawGribData: RawGribDatum[] = lines.map(parseGribLine)
-  const gribDataGroupedByTime: RawGribDatum[][] = R.pipe(R.groupBy(R.prop('time')), R.values)(rawGribData)
+  const gribDataGroupedByTime: RawGribDatum[][] = R.pipe(R.groupBy(R.prop('time')), R.values)(rawGribData) as RawGribDatum[][]
   const forecastItems = gribDataGroupedByTime.map(createForecastItem)
-  const sortedForecastItems = R.sortBy(item => item.time, forecastItems)
+  const sortedForecastItems = R.sortBy(item => item.time.getTime(), forecastItems)
 
   return { publishTime: sortedForecastItems[0].time, lat, lng, forecastItems: sortedForecastItems }
 

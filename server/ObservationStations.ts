@@ -1,5 +1,5 @@
 import Bluebird = require("bluebird")
-import requestP = require('request-promise')
+import request = require('request')
 import geolib = require('geolib')
 import moment = require('moment')
 import xpath = require('xpath')
@@ -19,8 +19,8 @@ export function init(apiKey): Bluebird<void> {
   const lastFullHour = moment().minutes(0).seconds(0).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"
   const observationsUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
 
-  return requestP.get(observationsUrl)
-    .then(body => {
+  return Bluebird.fromCallback(cb => request.get(observationsUrl, cb), {multiArgs: true})
+    .then(([res, body]) => {
       const doc = new DOMParser().parseFromString(body.toString())
       const select = xpath.useNamespaces({
         target: 'http://xml.fmi.fi/namespace/om/atmosphericfeatures/1.0',
