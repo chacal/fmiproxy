@@ -13,7 +13,7 @@ import * as GribReader from './GribReader'
 import * as GribDownloader from './GribDownloader'
 import * as ForecastCache from './ForecastCache'
 import Observations from './Observations'
-import {StationObservation} from "./ForecastDomain"
+import { ObservationItem, StationObservation } from './ForecastDomain'
 
 const logger = Logging.consoleLogger
 const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
@@ -107,6 +107,8 @@ function startServer(): void {
   function respondWithObservation(req, res, observation: StationObservation) {
     res.json(req.query.latest ? onlyLatest(observation) : observation)
 
-    function onlyLatest(observation: StationObservation): StationObservation { return L.modify('observations', R.pipe(R.sortBy(R.prop('time')), R.last), observation) }
+    const sortByTime: (obs: ObservationItem[]) => ObservationItem[] = R.sortBy(R.prop('time'))
+
+    function onlyLatest(observation: StationObservation): StationObservation { return L.modify('observations', R.pipe(sortByTime, R.last), observation) }
   }
 }

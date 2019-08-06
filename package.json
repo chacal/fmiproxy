@@ -39,7 +39,7 @@
     "partial.lenses": "^9.7.0",
     "ramda": "^0.23.0",
     "request": "^2.88.0",
-    "typescript": "^2.9.2",
+    "typescript": "^3.5.3",
     "victor": "^1.1.0",
     "winston": "^2.4.4",
     "winston-daily-rotate-file": "^1.0.1",
