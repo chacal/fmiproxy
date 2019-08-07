@@ -14,6 +14,7 @@ import * as GribDownloader from './GribDownloader'
 import * as ForecastCache from './ForecastCache'
 import Observations from './Observations'
 import { ObservationItem, StationObservation } from './ForecastDomain'
+import { getCityForecast } from './CityForecast'
 
 const logger = Logging.consoleLogger
 const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
@@ -84,6 +85,16 @@ function startServer(): void {
       })
       .then(observation => respondWithObservation(req, res, observation))
       .catch(next)
+  })
+
+  app.get(MOUNT_PREFIX + "/city-forecast", (req, res, next) => {
+    if(req.query.city === undefined) {
+      res.status(400).json({message: 'city parameter must be given!'})
+    } else {
+      getCityForecast(req.query.city)
+        .then(forecast => forecast !== undefined ? res.json(forecast) : res.status(404).json({message: `Forecast for city '${req.query.city}' not found.`}))
+        .catch(next)
+    }
   })
 
   app.listen(app.get('port'), () => logger.info("FMI proxy is running at localhost:" + app.get('port')))

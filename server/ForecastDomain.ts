@@ -48,3 +48,13 @@ export interface ObservationStation extends Coords {
 export interface NearestObservationStation extends ObservationStation {
   distanceMeters: number
 }
+
+export interface CityForecastItem {
+  date: Date,
+  temperature: number,
+  precipitation1h: number,
+  weatherSymbol3: number
+}
+
+export type CityForecast = CityForecastItem[]
+
