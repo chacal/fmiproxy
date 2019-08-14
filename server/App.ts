@@ -116,10 +116,10 @@ function startServer(): void {
   }
 
   function respondWithObservation(req, res, observation: StationObservation) {
-    res.json(req.query.latest ? onlyLatest(observation) : observation)
-
     const sortByTime: (obs: ObservationItem[]) => ObservationItem[] = R.sortBy(R.prop('time'))
 
+    res.json(req.query.latest ? onlyLatest(observation) : observation)
+    
     function onlyLatest(observation: StationObservation): StationObservation { return L.modify('observations', R.pipe(sortByTime, R.last), observation) }
   }
 }
