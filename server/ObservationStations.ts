@@ -14,10 +14,10 @@ const marineStationNames = require('../marine-observation-stations').map(R.prop(
 let observationStations: ObservationStation[] = []
 let marineObservationStations: ObservationStation[] = []
 
-export function init(apiKey): Bluebird<void> {
+export function init(): Bluebird<void> {
   logger.info("Updating observation station cache..")
   const lastFullHour = moment().minutes(0).seconds(0).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"
-  const observationsUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
+  const observationsUrl = 'http://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
 
   return Bluebird.fromCallback(cb => request.get(observationsUrl, cb), {multiArgs: true})
     .then(([res, body]) => {

@@ -5,8 +5,8 @@ import L = require('partial.lenses')
 import {StationObservation, ObservationItem} from "./ForecastDomain"
 import * as Utils from './Utils'
 
-export default function init(apiKey) {
-  const baseUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=getFeature&storedquery_id=fmi::observations::weather::multipointcoverage&parameters=temperature,windspeedms,windgust,winddirection,pressure'
+export default function init() {
+  const baseUrl = 'http://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::observations::weather::multipointcoverage&parameters=temperature,windspeedms,windgust,winddirection,pressure'
 
   const observationUrlForGeoid = geoid => baseUrl + '&geoid=' + geoid
   const observationUrlForPlace = place => baseUrl + '&place=' + place

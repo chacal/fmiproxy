@@ -14,7 +14,7 @@ const gribDir = __dirname + '/../gribs'
 
 export const latestGribFile = gribDir + '/latest.grb'
 
-export function init(apiKey): Bluebird<void> {
+export function init(): Bluebird<void> {
   logger.info("Initializing grib downloader.")
 
   return fsExtraP.mkdirsAsync(gribDir)
@@ -48,7 +48,7 @@ export function init(apiKey): Bluebird<void> {
   function getLatestDownloadedGribTimestamp(): Bluebird<Date> { return GribReader.getGribTimestamp(latestGribFile) }
 
   function getLatestPublishedGribTimestamp(): Bluebird<Date> {
-    const gribMetadataUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
+    const gribMetadataUrl = 'http://opendata.fmi.fi/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
     return Utils.getFmiXMLasJson(gribMetadataUrl)
       .then(json => {
         const last = L.choose(arr => L.index(arr.length - 1))
@@ -65,7 +65,7 @@ export function init(apiKey): Bluebird<void> {
   }
 
   function downloadLatestGrib(): Bluebird<void> {
-    const gribUrl = 'http://data.fmi.fi/fmi-apikey/' + apiKey + '/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
+    const gribUrl = 'http://opendata.fmi.fi/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
     logger.info("Downloading latest HIRLAM grib..")
     return Bluebird.fromCallback(cb => request.get(gribUrl, {encoding: null}, cb), {multiArgs: true})
       .then(([res, gribFileBuffer]) => {

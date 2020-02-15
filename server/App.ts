@@ -17,9 +17,8 @@ import { ObservationItem, StationObservation } from './ForecastDomain'
 import { getCityForecast } from './CityForecast'
 
 const logger = Logging.consoleLogger
-const FMIAPIKey = process.env.FMI_API_KEY || require('../apikey').key
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
-const observations = Observations(FMIAPIKey)
+const observations = Observations()
 
 const app = express()
 app.set('port', (process.env.PORT || 8000))
@@ -30,7 +29,7 @@ app.use(expressValidator())
 
 logger.info("Starting fmiproxy..")
 
-Bluebird.all([ObservationStations.init(FMIAPIKey), GribDownloader.init(FMIAPIKey)])
+Bluebird.all([ObservationStations.init(), GribDownloader.init()])
   .then(startServer)
 
 function startServer(): void {
