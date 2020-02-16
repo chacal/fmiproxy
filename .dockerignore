@@ -1,0 +1,8 @@
+node_modules
+logs
+built
+.idea
+azure-pipelines.yml
+Dockerfile
+run
+Vagrantfile
