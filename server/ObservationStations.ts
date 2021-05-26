@@ -23,7 +23,7 @@ export function init(): Bluebird<void> {
     .then(([res, body]) => {
       const doc = new DOMParser().parseFromString(body.toString())
       const select = xpath.useNamespaces({
-        target: 'http://xml.fmi.fi/namespace/om/atmosphericfeatures/1.0',
+        target: 'http://xml.fmi.fi/namespace/om/atmosphericfeatures/1.1',
         gml: 'http://www.opengis.net/gml/3.2',
         xlink: 'http://www.w3.org/1999/xlink'
       })
