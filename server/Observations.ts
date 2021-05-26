@@ -13,8 +13,8 @@ export default function init() {
 
   return {
 
-    getStationObservationForGeoid: (geoid: string): Bluebird<StationObservation> => Utils.getFmiXMLasJson(observationUrlForGeoid(geoid)).then(parseStationObservation),
-    getStationObservationForPlace: (place: string): Bluebird<StationObservation> => Utils.getFmiXMLasJson(observationUrlForPlace(place)).then(parseStationObservation)
+    getStationObservationForGeoid: (geoid: string): Promise<StationObservation> => Utils.getFmiXMLasJson(observationUrlForGeoid(geoid)).then(parseStationObservation),
+    getStationObservationForPlace: (place: string): Promise<StationObservation> => Utils.getFmiXMLasJson(observationUrlForPlace(place)).then(parseStationObservation)
 
   }
 

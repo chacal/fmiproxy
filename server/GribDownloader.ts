@@ -2,7 +2,7 @@ import Bluebird = require('bluebird')
 import fsExtraP = require('fs-extra-promise')
 import L = require('partial.lenses')
 import moment = require('moment')
-import request = require('request')
+import fetch from 'node-fetch'
 
 import * as Utils from './Utils'
 import * as GribReader from './GribReader'
@@ -47,7 +47,7 @@ export function init(): Bluebird<void> {
 
   function getLatestDownloadedGribTimestamp(): Bluebird<Date> { return GribReader.getGribTimestamp(latestGribFile) }
 
-  function getLatestPublishedGribTimestamp(): Bluebird<Date> {
+  function getLatestPublishedGribTimestamp(): Promise<Date> {
     const gribMetadataUrl = 'http://opendata.fmi.fi/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
     return Utils.getFmiXMLasJson(gribMetadataUrl)
       .then(json => {
@@ -64,11 +64,12 @@ export function init(): Bluebird<void> {
       })
   }
 
-  function downloadLatestGrib(): Bluebird<void> {
+  function downloadLatestGrib(): Promise<void> {
     const gribUrl = 'http://opendata.fmi.fi/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
     logger.info("Downloading latest HIRLAM grib..")
-    return Bluebird.fromCallback(cb => request.get(gribUrl, {encoding: null}, cb), {multiArgs: true})
-      .then(([res, gribFileBuffer]) => {
+    return fetch(gribUrl)
+      .then(res => res.buffer())
+      .then(gribFileBuffer => {
         if(gribFileBuffer.length === 0) {
           console.warn("Got empty response when downloading grib. Retrying..")
           return Bluebird.delay(5000).then(downloadLatestGrib)

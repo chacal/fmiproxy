@@ -3,7 +3,7 @@ import child_process = require('child_process')
 import moment = require('moment')
 import L = require('partial.lenses')
 import R = require('ramda')
-import request = require('request')
+import fetch from 'node-fetch'  
 
 import {ForecastItem, Coords} from "./ForecastDomain"
 
@@ -26,9 +26,10 @@ export function grib_get(params: string[]): Bluebird<string> {
   })
 }
 
-export function getFmiXMLasJson(url: string): Bluebird<any> {
-  return Bluebird.fromCallback(cb => request.get(url, cb), {multiArgs: true})
-    .then(([res, body]) => Bluebird.fromCallback(cb => require('xml2js').parseString(body, cb)))
+export function getFmiXMLasJson(url: string): Promise<any> {
+  return fetch(url)
+    .then(res => res.text())
+    .then(body => Bluebird.fromCallback(cb => require('xml2js').parseString(body, cb)))
 }
 
 export function coordinatesFromPositionString(position: string): Coords {

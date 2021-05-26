@@ -1,10 +1,9 @@
-import Bluebird = require("bluebird")
-import request = require('request')
 import geolib = require('geolib')
 import moment = require('moment')
 import xpath = require('xpath')
 import R = require('ramda')
 import { DOMParser } from 'xmldom'
+import fetch from 'node-fetch'
 
 import {ObservationStation, NearestObservationStation} from "./ForecastDomain"
 import * as Utils from './Utils'
@@ -14,14 +13,15 @@ const marineStationNames = require('../marine-observation-stations').map(R.prop(
 let observationStations: ObservationStation[] = []
 let marineObservationStations: ObservationStation[] = []
 
-export function init(): Bluebird<void> {
+export function init(): Promise<void> {
   logger.info("Updating observation station cache..")
   const lastFullHour = moment().minutes(0).seconds(0).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"
   const observationsUrl = 'http://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
 
-  return Bluebird.fromCallback(cb => request.get(observationsUrl, cb), {multiArgs: true})
-    .then(([res, body]) => {
-      const doc = new DOMParser().parseFromString(body.toString())
+  return fetch(observationsUrl)
+    .then(res => res.text())
+    .then(body => {
+      const doc = new DOMParser().parseFromString(body)
       const select = xpath.useNamespaces({
         target: 'http://xml.fmi.fi/namespace/om/atmosphericfeatures/1.1',
         gml: 'http://www.opengis.net/gml/3.2',
