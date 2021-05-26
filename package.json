@@ -20,6 +20,7 @@
     "@types/node": "^12.12.27",
     "@types/node-fetch": "^2.5.10",
     "@types/ramda": "^0.25.51",
+    "@types/xml2js": "^0.4.8",
     "@types/xmldom": "^0.1.29",
     "bluebird": "^3.7.2",
     "compression": "^1.7.4",
