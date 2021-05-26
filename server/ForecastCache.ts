@@ -1,6 +1,6 @@
 import geolib = require('geolib')
 import moment = require('moment')
-import R = require('ramda')
+import * as R from 'ramda'
 import L = require('partial.lenses')
 
 import {PointForecast, Coords, AreaForecast, Bounds, ForecastItem} from "./ForecastDomain"

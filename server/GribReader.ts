@@ -1,6 +1,6 @@
 import Victor = require('victor')
 import moment = require('moment')
-import R = require('ramda')
+import * as R from 'ramda'
 import L = require('partial.lenses')
 
 import {PointForecast, ForecastItem, Bounds} from './ForecastDomain'

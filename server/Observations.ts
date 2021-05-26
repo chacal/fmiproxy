@@ -1,4 +1,4 @@
-import R = require('ramda')
+import * as R from 'ramda'
 import L = require('partial.lenses')
 
 import {StationObservation, ObservationItem} from "./ForecastDomain"

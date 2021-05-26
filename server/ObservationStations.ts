@@ -1,7 +1,7 @@
 import geolib = require('geolib')
 import moment = require('moment')
 import xpath = require('xpath')
-import R = require('ramda')
+import * as R from 'ramda'
 import { DOMParser } from 'xmldom'
 import fetch from 'node-fetch'
 

@@ -1,7 +1,7 @@
 import child_process = require('child_process')
 import moment = require('moment')
 import L = require('partial.lenses')
-import R = require('ramda')
+import * as R from 'ramda'
 import fetch from 'node-fetch'
 import { parseStringPromise } from 'xml2js'
 

@@ -3,7 +3,7 @@ import cors = require('cors')
 import compression = require('compression')
 import morgan = require('morgan')
 import expressValidator = require('express-validator')
-import R = require('ramda')
+import * as R from 'ramda'
 import L = require('partial.lenses')
 
 import * as Logging from './Logging'
