@@ -1,4 +1,3 @@
-import Bluebird = require("bluebird")
 import R = require('ramda')
 import L = require('partial.lenses')
 

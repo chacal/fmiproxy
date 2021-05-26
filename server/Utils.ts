@@ -1,4 +1,3 @@
-import Bluebird = require('bluebird')
 import child_process = require('child_process')
 import moment = require('moment')
 import L = require('partial.lenses')
@@ -8,8 +7,8 @@ import { parseStringPromise } from 'xml2js'
 
 import {ForecastItem, Coords} from "./ForecastDomain"
 
-export function grib_get(params: string[]): Bluebird<string> {
-  return new Bluebird<string>((resolve, reject) => {
+export function grib_get(params: string[]): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
     const grib_get = child_process.spawn('grib_get', params)
     let output = ""
     let errorOutput = ""
@@ -57,4 +56,8 @@ export function rangeStep(start: number, stop: number, step: number = 1): number
     n => start + step * n,
     R.range(0, (1 + (stop - start) / step) >>> 0)
   )
+}
+
+export function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }

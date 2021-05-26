@@ -1,7 +1,6 @@
 import express = require('express')
 import cors = require('cors')
 import compression = require('compression')
-import Bluebird = require('bluebird')
 import morgan = require('morgan')
 import expressValidator = require('express-validator')
 import R = require('ramda')
@@ -29,7 +28,7 @@ app.use(expressValidator())
 
 logger.info("Starting fmiproxy..")
 
-Bluebird.all([ObservationStations.init(), GribDownloader.init()])
+Promise.all([ObservationStations.init(), GribDownloader.init()])
   .then(startServer)
 
 function startServer(): void {

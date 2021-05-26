@@ -1,4 +1,3 @@
-import Bluebird = require("bluebird")
 import geolib = require('geolib')
 import moment = require('moment')
 import R = require('ramda')
@@ -9,7 +8,6 @@ import * as GribReader from './GribReader'
 import * as Utils from './Utils'
 import { consoleLogger as logger } from './Logging'
 
-const CPU_COUNT = require('os').cpus().length
 const LAT_GRID_INCREMENT = 0.2
 const LNG_GRID_INCREMENT = 0.5
 let cachedForecast: AreaForecast
@@ -39,7 +37,7 @@ export function getBoundedAreaForecast(bounds: Bounds, startTime: Date = new Dat
   }
 }
 
-export function refreshFrom(gribFile: string): Bluebird<void> {
+export function refreshFrom(gribFile: string): Promise<void> {
   const startTime = new Date()
   logger.info('Refreshing forecast cache..')
   return GribReader.getGribTimestamp(gribFile)
@@ -50,8 +48,8 @@ export function refreshFrom(gribFile: string): Bluebird<void> {
       .then(() => { logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecast.pointForecasts.length + ' points.')})
     )
 
-  function getPointForecastsForLocations(locations: Coords[], gribFile: string): Bluebird<PointForecast[]> {
-    return Bluebird.map(locations, location => GribReader.getPointForecastFromGrib(gribFile, location.latitude, location.longitude), {concurrency: CPU_COUNT})
+  function getPointForecastsForLocations(locations: Coords[], gribFile: string): Promise<PointForecast[]> {
+    return Promise.all(locations.map(location => GribReader.getPointForecastFromGrib(gribFile, location.latitude, location.longitude)))
   }
 
   function createForecastLocations(bounds: Bounds, latIncrement: number, lngIncrement: number): Coords[] {

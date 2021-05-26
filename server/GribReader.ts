@@ -1,4 +1,3 @@
-import Bluebird = require("bluebird")
 import Victor = require('victor')
 import moment = require('moment')
 import R = require('ramda')
@@ -7,13 +6,13 @@ import L = require('partial.lenses')
 import {PointForecast, ForecastItem, Bounds} from './ForecastDomain'
 import * as Utils from './Utils'
 
-export function getPointForecastFromGrib(gribPath: string, latitude: number, longitude: number, startTime: Date = new Date(0)): Bluebird<PointForecast> {
+export function getPointForecastFromGrib(gribPath: string, latitude: number, longitude: number, startTime: Date = new Date(0)): Promise<PointForecast> {
   return Utils.grib_get(['-p', 'shortName,dataDate,dataTime,forecastTime', '-l', latitude + ',' + longitude + ',1', gribPath])
     .then(stdout => parseForecastTimeAndItems(stdout, latitude, longitude))
     .then(forecast => L.remove(Utils.itemsBefore(startTime), forecast))
 }
 
-export function getGribBounds(gribFile: string): Bluebird<Bounds> {
+export function getGribBounds(gribFile: string): Promise<Bounds> {
   return Utils.grib_get(['-p', 'latitudeOfFirstGridPointInDegrees,longitudeOfFirstGridPointInDegrees,latitudeOfLastGridPointInDegrees,longitudeOfLastGridPointInDegrees', gribFile])
     .then(output => output.split('\n')[0])
     .then(line => {
@@ -22,7 +21,7 @@ export function getGribBounds(gribFile: string): Bluebird<Bounds> {
     })
 }
 
-export function getGribTimestamp(gribFile: string): Bluebird<Date> {
+export function getGribTimestamp(gribFile: string): Promise<Date> {
   return Utils.grib_get(['-p', 'dataDate,dataTime', gribFile])
     .then(output => {
       const parts = output.split(/\n/)[0].split(/ /)
