@@ -1,10 +1,10 @@
-import express = require('express')
+import * as express from "express"
 import cors = require('cors')
 import compression = require('compression')
 import morgan = require('morgan')
-import expressValidator = require('express-validator')
 import * as R from 'ramda'
 import L = require('partial.lenses')
+import { query } from 'express-validator'
 
 import * as Logging from './Logging'
 import * as ObservationStations from './ObservationStations'
@@ -14,6 +14,7 @@ import * as ForecastCache from './ForecastCache'
 import Observations from './Observations'
 import { ObservationItem, StationObservation } from './ForecastDomain'
 import { getCityForecast } from './CityForecast'
+import { validateRequest } from './Utils'
 
 const logger = Logging.consoleLogger
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
@@ -24,7 +25,6 @@ app.set('port', (process.env.PORT || 8000))
 app.use(morgan(Logging.requestLoggingFormat, { stream: Logging.fileLoggerStream }))
 app.use(cors())
 app.use(compression())
-app.use(expressValidator())
 
 logger.info("Starting fmiproxy..")
 
@@ -34,24 +34,30 @@ Promise.all([ObservationStations.init(), GribDownloader.init()])
 function startServer(): void {
   logger.info("Starting HTTP server..")
 
-  app.get(MOUNT_PREFIX + "/nearest-station", (req, res, next) => {
-    checkLatLonParams(req)
-      .then(() => res.json(ObservationStations.getNearestStation(req.query.lat, req.query.lon, req.query.marineOnly === 'true')))
-      .catch(next)
-  })
+  app.get(MOUNT_PREFIX + "/nearest-station",
+    checkLatLonParams(),
+    (req, res) => {
+      const lat = parseFloat(req.query.lat as string)
+      const lon = parseFloat(req.query.lon as string)
+      res.json(ObservationStations.getNearestStation(lat, lon, req.query.marineOnly === 'true'))
+    })
 
   app.get(MOUNT_PREFIX + "/hirlam-forecast", (req, res, next) => {
     if(req.query.bounds && (req.query.lat || req.query.lon)) {
       res.status(400).json({message: 'Use either bounds or lat & lon, not both!'})
     } else if(req.query.bounds) {
+      const startTime = new Date(req.query.startTime as string)
       try {
-        const coords = req.query.bounds.trim().split(',').map(parseFloat)
-        res.json(ForecastCache.getBoundedAreaForecast({ swCorner: { latitude: coords[0], longitude: coords[1] }, neCorner: { latitude: coords[2], longitude: coords[3] } }, req.query.startTime))
+        const coords = (req.query.bounds as string).trim().split(',').map(parseFloat)
+        res.json(ForecastCache.getBoundedAreaForecast({ swCorner: { latitude: coords[0], longitude: coords[1] }, neCorner: { latitude: coords[2], longitude: coords[3] } }, startTime))
       } catch (e) {
         next(e)
       }
     } else if(req.query.lat && req.query.lon) {
-      GribReader.getPointForecastFromGrib(GribDownloader.latestGribFile, req.query.lat, req.query.lon, req.query.startTime)
+      const lat = parseFloat(req.query.lat as string)
+      const lon = parseFloat(req.query.lon as string)
+      const startTime = new Date(req.query.startTime as string)
+      GribReader.getPointForecastFromGrib(GribDownloader.latestGribFile, lat, lon, startTime)
         .then(pf => res.json(pf))
         .catch(next)
     } else {
@@ -63,11 +69,11 @@ function startServer(): void {
     if(req.query.geoid && req.query.place) {
       res.status(400).json({message: 'Use either geiod or place, not both!'})
     } else if(req.query.geoid) {
-      observations.getStationObservationForGeoid(req.query.geoid)
+      observations.getStationObservationForGeoid(req.query.geoid as string)
         .then(observation => respondWithObservation(req, res, observation))
         .catch(next)
     } else if(req.query.place) {
-      observations.getStationObservationForPlace(req.query.place)
+      observations.getStationObservationForPlace(req.query.place as string)
         .then(observation => respondWithObservation(req, res, observation))
         .catch(next)
     } else {
@@ -75,21 +81,19 @@ function startServer(): void {
     }
   })
 
-  app.get(MOUNT_PREFIX + "/nearest-observations", (req, res, next) => {
-    checkLatLonParams(req)
-      .then(() => {
-        const nearestStation = ObservationStations.getNearestStation(req.query.lat, req.query.lon, req.query.marineOnly === 'true')
-        return observations.getStationObservationForGeoid(nearestStation.geoid)
-      })
+  app.get(MOUNT_PREFIX + "/nearest-observations", checkLatLonParams(), (req, res) => {
+    const lat = parseFloat(req.query.lat as string)
+    const lon = parseFloat(req.query.lon as string)
+    const nearestStation = ObservationStations.getNearestStation(lat, lon, req.query.marineOnly === 'true')
+    observations.getStationObservationForGeoid(nearestStation.geoid)
       .then(observation => respondWithObservation(req, res, observation))
-      .catch(next)
   })
 
   app.get(MOUNT_PREFIX + "/city-forecast", (req, res, next) => {
     if(req.query.city === undefined) {
       res.status(400).json({message: 'city parameter must be given!'})
     } else {
-      getCityForecast(req.query.city)
+      getCityForecast(req.query.city as string)
         .then(forecast => forecast !== undefined ? res.json(forecast) : res.status(404).json({message: `Forecast for city '${req.query.city}' not found.`}))
         .catch(next)
     }
@@ -98,7 +102,7 @@ function startServer(): void {
   app.listen(app.get('port'), () => logger.info("FMI proxy is running at localhost:" + app.get('port')))
 
   app.use((err, req, res, next) => {
-    logger.error(err.mapped ? err.mapped() : err)
+    logger.error(err.mapped ? JSON.stringify(err.mapped()) : err)
     res.status(err.status || 500)
     res.json({
       message: err.message,
@@ -106,11 +110,12 @@ function startServer(): void {
     })
   })
 
-  function checkLatLonParams(req) {
-    req.check('lat').notEmpty().isDecimal()
-    req.check('lon').notEmpty().isDecimal()
-    return req.getValidationResult()
-      .then(result => result.throw())
+  function checkLatLonParams() {
+    return validateRequest([
+        query('lat').notEmpty().isDecimal(),
+        query('lon').notEmpty().isDecimal(),
+      ]
+    )
   }
 
   function respondWithObservation(req, res, observation: StationObservation) {

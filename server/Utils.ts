@@ -5,7 +5,9 @@ import * as R from 'ramda'
 import fetch from 'node-fetch'
 import { parseStringPromise } from 'xml2js'
 
-import {ForecastItem, Coords} from "./ForecastDomain"
+import { Coords, ForecastItem } from './ForecastDomain'
+import { ValidationChain, validationResult } from 'express-validator'
+import { NextFunction, Request, Response } from 'express'
 
 export function grib_get(params: string[]): Promise<string> {
   return new Promise<string>((resolve, reject) => {
@@ -60,4 +62,16 @@ export function rangeStep(start: number, stop: number, step: number = 1): number
 
 export function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+export function validateRequest(validations: ValidationChain[]) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    await Promise.all(validations.map(validation => validation.run(req)))
+
+    const errors = validationResult(req)
+    if (errors.isEmpty()) {
+      return next()
+    }
+    return next(errors)
+  }
 }
