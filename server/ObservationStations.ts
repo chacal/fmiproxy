@@ -27,14 +27,14 @@ export function init(): Promise<void> {
         gml: 'http://www.opengis.net/gml/3.2',
         xlink: 'http://www.w3.org/1999/xlink'
       })
-      const locationNodes: any[] = select("//target:Location", doc)
+      const locationNodes = select("//target:Location", doc)
       return locationNodes.map(createObservationStation)
 
-      function createObservationStation(locationNode): ObservationStation {
-        const name: string = select('./gml:name[@codeSpace="http://xml.fmi.fi/namespace/locationcode/name"]/text()', locationNode).toString()
-        const geoid: string = select('./gml:name[@codeSpace="http://xml.fmi.fi/namespace/locationcode/geoid"]/text()', locationNode).toString()
-        const poinRef = select('./target:representativePoint/@xlink:href', locationNode, true).value.substr(1)
-        const position = select('//gml:Point[@gml:id="' + poinRef + '"]/gml:pos/text()', doc, true).toString()
+      function createObservationStation(locationNode: Node): ObservationStation {
+        const name = select('./gml:name[@codeSpace="http://xml.fmi.fi/namespace/locationcode/name"]/text()', locationNode).toString()
+        const geoid = select('./gml:name[@codeSpace="http://xml.fmi.fi/namespace/locationcode/geoid"]/text()', locationNode).toString()
+        const poinRef = select('./target:representativePoint/@xlink:href', locationNode, true) as Attr
+        const position = select('//gml:Point[@gml:id="' + poinRef.value.substr(1) + '"]/gml:pos/text()', doc, true).toString()
         const {latitude, longitude} = Utils.coordinatesFromPositionString(position)
         return {geoid, name, latitude, longitude}
       }
