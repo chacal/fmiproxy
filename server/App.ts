@@ -1,7 +1,6 @@
 import * as express from "express"
 import cors = require('cors')
 import compression = require('compression')
-import morgan = require('morgan')
 import * as R from 'ramda'
 import L = require('partial.lenses')
 import { query } from 'express-validator'
@@ -22,7 +21,6 @@ const observations = Observations()
 
 const app = express()
 app.set('port', (process.env.PORT || 8000))
-app.use(morgan(Logging.requestLoggingFormat, { stream: Logging.fileLoggerStream }))
 app.use(cors())
 app.use(compression())
 
