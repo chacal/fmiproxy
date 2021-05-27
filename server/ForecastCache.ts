@@ -47,8 +47,20 @@ export function refreshFrom(gribFile: string): Promise<void> {
       .then(() => { logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecast.pointForecasts.length + ' points.')})
     )
 
-  function getPointForecastsForLocations(locations: Coords[], gribFile: string): Promise<PointForecast[]> {
-    return Promise.all(locations.map(location => GribReader.getPointForecastFromGrib(gribFile, location.latitude, location.longitude)))
+  async function getPointForecastsForLocations(locations: Coords[], gribFile: string): Promise<PointForecast[]> {
+    const tmp = [...locations]
+    const res = []
+
+    while (tmp.length > 0) {
+      // Get 10 points from the grib concurrently to limit memory usage
+      const forecasts = await Promise.all(
+        tmp.splice(0, 10)
+          .map(location => GribReader.getPointForecastFromGrib(gribFile, location.latitude, location.longitude))
+      )
+      res.push(...forecasts)
+    }
+
+    return res
   }
 
   function createForecastLocations(bounds: Bounds, latIncrement: number, lngIncrement: number): Coords[] {
