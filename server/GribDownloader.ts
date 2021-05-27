@@ -7,7 +7,7 @@ import * as Utils from './Utils'
 import { delay } from './Utils'
 import * as GribReader from './GribReader'
 import * as ForecastCache from './ForecastCache'
-import { consoleLogger as logger } from './Logging'
+import { logger } from './Logging'
 
 const gribUpdateCheckIntervalMillis = 10 * 60 * 1000
 const gribDir = __dirname + '/../gribs'

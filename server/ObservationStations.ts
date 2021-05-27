@@ -7,7 +7,7 @@ import { findNearest, getDistance } from 'geolib'
 
 import { NearestObservationStation, ObservationStation } from './ForecastDomain'
 import * as Utils from './Utils'
-import { consoleLogger as logger } from './Logging'
+import { logger } from './Logging'
 
 const marineStationNames = require('../marine-observation-stations').map(R.prop('name'))
 

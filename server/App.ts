@@ -2,7 +2,7 @@ import * as express from 'express'
 import * as R from 'ramda'
 import { query } from 'express-validator'
 
-import * as Logging from './Logging'
+import { logger } from './Logging'
 import * as ObservationStations from './ObservationStations'
 import * as GribReader from './GribReader'
 import * as GribDownloader from './GribDownloader'
@@ -15,7 +15,6 @@ import cors = require('cors')
 import compression = require('compression')
 import L = require('partial.lenses')
 
-const logger = Logging.consoleLogger
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
 const observations = Observations()
 
