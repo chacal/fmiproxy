@@ -5,9 +5,10 @@ import { DOMParser } from 'xmldom'
 import fetch from 'node-fetch'
 import { findNearest, getDistance } from 'geolib'
 
-import {ObservationStation, NearestObservationStation} from "./ForecastDomain"
+import { NearestObservationStation, ObservationStation } from './ForecastDomain'
 import * as Utils from './Utils'
 import { consoleLogger as logger } from './Logging'
+
 const marineStationNames = require('../marine-observation-stations').map(R.prop('name'))
 
 let observationStations: ObservationStation[] = []

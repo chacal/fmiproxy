@@ -1,7 +1,7 @@
 import * as Utils from './Utils'
-import L = require('partial.lenses')
 import * as R from 'ramda'
 import { CityForecast } from './ForecastDomain'
+import L = require('partial.lenses')
 
 const baseUrl = 'http://opendata.fmi.fi/wfs?service=WFS&version=2.0.0&request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::point::simple&&parameters=Temperature,Precipitation1h,WeatherSymbol3'
 

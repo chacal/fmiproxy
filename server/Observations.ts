@@ -1,8 +1,8 @@
 import * as R from 'ramda'
-import L = require('partial.lenses')
 
-import {StationObservation, ObservationItem} from "./ForecastDomain"
+import { ObservationItem, StationObservation } from './ForecastDomain'
 import * as Utils from './Utils'
+import L = require('partial.lenses')
 
 export default function init() {
   const baseUrl = 'http://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::observations::weather::multipointcoverage&parameters=temperature,windspeedms,windgust,winddirection,pressure'

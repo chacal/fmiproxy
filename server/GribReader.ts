@@ -1,9 +1,9 @@
 import Victor = require('victor')
 import moment = require('moment')
-import * as R from 'ramda'
 import L = require('partial.lenses')
+import * as R from 'ramda'
 
-import {PointForecast, ForecastItem, Bounds} from './ForecastDomain'
+import { Bounds, ForecastItem, PointForecast } from './ForecastDomain'
 import * as Utils from './Utils'
 
 export function getPointForecastFromGrib(gribPath: string, latitude: number, longitude: number, startTime: Date = new Date(0)): Promise<PointForecast> {

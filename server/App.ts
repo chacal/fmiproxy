@@ -1,8 +1,5 @@
-import * as express from "express"
-import cors = require('cors')
-import compression = require('compression')
+import * as express from 'express'
 import * as R from 'ramda'
-import L = require('partial.lenses')
 import { query } from 'express-validator'
 
 import * as Logging from './Logging'
@@ -14,6 +11,9 @@ import Observations from './Observations'
 import { ObservationItem, StationObservation } from './ForecastDomain'
 import { getCityForecast } from './CityForecast'
 import { validateRequest } from './Utils'
+import cors = require('cors')
+import compression = require('compression')
+import L = require('partial.lenses')
 
 const logger = Logging.consoleLogger
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''

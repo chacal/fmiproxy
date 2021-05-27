@@ -1,12 +1,11 @@
-import moment = require('moment')
 import { isPointInPolygon } from 'geolib'
 import * as R from 'ramda'
-import L = require('partial.lenses')
 
-import {PointForecast, Coords, AreaForecast, Bounds, ForecastItem} from "./ForecastDomain"
+import { AreaForecast, Bounds, Coords, PointForecast } from './ForecastDomain'
 import * as GribReader from './GribReader'
 import * as Utils from './Utils'
 import { consoleLogger as logger } from './Logging'
+import L = require('partial.lenses')
 
 const LAT_GRID_INCREMENT = 0.2
 const LNG_GRID_INCREMENT = 0.5
