@@ -1,5 +1,5 @@
 # Builder container
-FROM node:12-slim AS builder
+FROM node:14-slim AS builder
 WORKDIR /opt/app
 
 COPY package.json package-lock.json ./
@@ -10,7 +10,7 @@ RUN npx tsc
 
 
 # Build prod container
-FROM node:12-slim
+FROM node:14-slim
 ENV NODE_ENV=production
 ENV TZ="Europe/Helsinki"
 WORKDIR /opt/app
@@ -23,7 +23,6 @@ RUN npm install
 COPY --from=builder /opt/app/built ./built
 
 RUN mkdir -p /opt/app/gribs && chown node /opt/app/gribs
-RUN mkdir -p /opt/app/logs && chown node /opt/app/logs
 
 CMD ["node", "./built/App.js"]
 
