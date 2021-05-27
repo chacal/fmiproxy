@@ -1,5 +1,5 @@
-import geolib = require('geolib')
 import moment = require('moment')
+import { isPointInPolygon } from 'geolib'
 import * as R from 'ramda'
 import L = require('partial.lenses')
 
@@ -33,7 +33,7 @@ export function getBoundedAreaForecast(bounds: Bounds, startTime: Date = new Dat
 
 
   function forecastInBounds(forecast: PointForecast, corners: Coords[]): boolean {
-    return geolib.isPointInside({latitude: forecast.latitude, longitude: forecast.longitude}, corners)
+    return isPointInPolygon({latitude: forecast.latitude, longitude: forecast.longitude}, corners)
   }
 }
 

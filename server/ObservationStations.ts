@@ -1,9 +1,9 @@
-import geolib = require('geolib')
 import moment = require('moment')
 import xpath = require('xpath')
 import * as R from 'ramda'
 import { DOMParser } from 'xmldom'
 import fetch from 'node-fetch'
+import { findNearest, getDistance } from 'geolib'
 
 import {ObservationStation, NearestObservationStation} from "./ForecastDomain"
 import * as Utils from './Utils'
@@ -48,6 +48,7 @@ export function init(): Promise<void> {
 
 export function getNearestStation(latitude: number, longitude: number, marineStationsOnly: boolean = false): NearestObservationStation {
   const haystack = marineStationsOnly ? marineObservationStations : observationStations
-  const nearest = geolib.findNearest({latitude, longitude}, haystack) as any  // Typings for geolib are wrong
-  return R.merge({ distanceMeters: nearest.distance }, haystack[nearest.key] as any)
+  const nearest = findNearest({latitude, longitude}, haystack) as ObservationStation
+  const distanceMeters = getDistance({latitude, longitude}, nearest)
+  return R.merge({ distanceMeters }, nearest)
 }
