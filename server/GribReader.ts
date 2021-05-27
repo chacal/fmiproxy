@@ -1,7 +1,7 @@
 import Victor = require('victor')
-import moment = require('moment')
 import L = require('partial.lenses')
 import * as R from 'ramda'
+import { addHours } from 'date-fns'
 
 import { Bounds, ForecastItem, PointForecast } from './ForecastDomain'
 import * as Utils from './Utils'
@@ -64,7 +64,7 @@ function parseForecastTimeAndItems(gribGetOutput: string, latitude: number, long
 
     return {
       name: datumName,
-      time: moment(Utils.parseFullHourlDateFromGribItemDateAndTime(date, time)).clone().add(timeIncrement, 'h').toDate(),
+      time: addHours(Utils.parseFullHourlDateFromGribItemDateAndTime(date, time), Number(timeIncrement)),
       value: datumValue
     }
   }

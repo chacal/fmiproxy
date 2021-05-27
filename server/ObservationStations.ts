@@ -1,9 +1,10 @@
-import moment = require('moment')
 import xpath = require('xpath')
 import * as R from 'ramda'
 import { DOMParser } from 'xmldom'
 import fetch from 'node-fetch'
 import { findNearest, getDistance } from 'geolib'
+import { format, startOfHour } from 'date-fns'
+import { convertToTimeZone } from 'date-fns-timezone'
 
 import { NearestObservationStation, ObservationStation } from './ForecastDomain'
 import * as Utils from './Utils'
@@ -16,7 +17,7 @@ let marineObservationStations: ObservationStation[] = []
 
 export function init(): Promise<void> {
   logger.info("Updating observation station cache..")
-  const lastFullHour = moment().minutes(0).seconds(0).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z"
+  const lastFullHour = format(startOfHour(convertToTimeZone(new Date(), { timeZone: 'UTC'})), "yyyy-MM-dd'T'HH:mm:ss'Z'")
   const observationsUrl = 'http://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
 
   return fetch(observationsUrl)

@@ -1,9 +1,9 @@
 import child_process = require('child_process')
-import moment = require('moment')
 import L = require('partial.lenses')
 import * as R from 'ramda'
 import fetch from 'node-fetch'
 import { parseStringPromise } from 'xml2js'
+import { isBefore, parse, startOfHour } from 'date-fns'
 
 import { Coords, ForecastItem } from './ForecastDomain'
 import { ValidationChain, validationResult } from 'express-validator'
@@ -43,14 +43,21 @@ export function parseFullHourlDateFromGribItemDateAndTime(date: string, time: st
   // Return timestamp with one hour precision (ignores minutes)
   // Works correctly for time inputs: '0', '12', '600', '1600', '1230'
   // Assumes that the date & time are given in GMT time zone
-  const hours = (time.length === 1 || time.length === 3) ? '0' + time : time
-  return moment(date + hours + '+0000', 'YYYYMMDDHHZ').toDate()
+  let hours = time
+  if(time.length === 1) {
+    hours = '0' + time + '00'
+  } else if(time.length === 2) {
+    hours = time + '00'
+  } else if(time.length === 3) {
+    hours = '0' + time
+  }
+  return startOfHour(parse(date + hours + 'Z', 'yyyyMMddHHmmX', new Date()))
 }
 
 export const itemsBefore = (time: Date) => ['forecastItems', L.elems, L.when(isItemBefore(time))]
 
 export function isItemBefore(time: Date): (item: ForecastItem) => boolean {
-  return item => moment(item.time).isBefore(moment(time))
+  return item => isBefore(item.time, time)
 }
 
 export function rangeStep(start: number, stop: number, step: number = 1): number[] {

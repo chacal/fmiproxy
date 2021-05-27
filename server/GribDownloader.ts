@@ -1,7 +1,7 @@
 import fsExtraP = require('fs-extra-promise')
 import L = require('partial.lenses')
-import moment = require('moment')
 import fetch from 'node-fetch'
+import { isAfter, isEqual } from 'date-fns'
 
 import * as Utils from './Utils'
 import { delay } from './Utils'
@@ -33,8 +33,8 @@ export function init(): Promise<void> {
     logger.info('Checking for new grib..')
     return Promise.all([getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp()])
       .then(([downloadedTime, publishedTime]) => {
-      logger.info('Downloaded grib timestamp: ', downloadedTime, ' Latest published grib timestamp: ', publishedTime)
-      return moment(downloadedTime || 0).isSameOrAfter(moment(publishedTime))
+      logger.info(`Downloaded grib timestamp: ${downloadedTime} Latest published grib timestamp: ${publishedTime}`)
+      return isAfter(downloadedTime, publishedTime) || isEqual(downloadedTime, publishedTime)
     })
     .then(downloadedGribUpToDate => {
       if(! downloadedGribUpToDate) {
