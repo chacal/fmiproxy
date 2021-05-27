@@ -56,7 +56,7 @@ export function refreshFrom(gribFile: string): Promise<void> {
     const latitudes = Utils.rangeStep(bounds.swCorner.latitude, bounds.neCorner.latitude, latIncrement).map(roundTo1Decimal)
     const longitudes = Utils.rangeStep(bounds.swCorner.longitude, bounds.neCorner.longitude, lngIncrement).map(roundTo1Decimal)
 
-    return R.flatten<Coords>(latitudes.map(latitude => longitudes.map(longitude => ({latitude, longitude}))))
+    return R.flatten(latitudes.map(latitude => longitudes.map(longitude => ({latitude, longitude}))))
   }
 }
 

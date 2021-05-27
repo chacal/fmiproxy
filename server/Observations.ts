@@ -35,7 +35,7 @@ export default function init() {
     const observations = observationLines.map(parseObservationItem)
 
     return {
-      station: R.merge(stationInfo, {geoid}),
+      station: R.mergeRight(stationInfo, {geoid}),
       observations
     }
 
@@ -60,10 +60,10 @@ export default function init() {
         gridSeriesObservation)
     }
 
-    function getStationInfoFromGmlPoint(gmlPoint: any): any {
-      const name = gmlPoint['gml:name'][0]
+    function getStationInfoFromGmlPoint(gmlPoint: any) {
+      const name = gmlPoint['gml:name'][0] as string
       const position = gmlPoint['gml:pos'][0].trim()
-      return R.merge({ name }, Utils.coordinatesFromPositionString(position) as any)
+      return R.merge({ name }, Utils.coordinatesFromPositionString(position))
     }
 
     function trimmedLines(input: string): string[] { return input.trim().split(/\n/).map(line => line.trim()) }
