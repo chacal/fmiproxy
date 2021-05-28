@@ -49,7 +49,7 @@ export function refreshFrom(gribFile: string): Promise<void> {
         cachedForecast = { publishTime: timestamp, pointForecasts }
       })
       .then(() => {
-        logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecast.pointForecasts.length + ' points.')
+        logger.info(`Forecast cache refreshed in ${new Date().getTime() - startTime.getTime()}ms. Contains ${cachedForecast.pointForecasts.length} points.`)
       })
     )
 

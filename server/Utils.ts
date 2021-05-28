@@ -45,11 +45,11 @@ export function parseFullHourlDateFromGribItemDateAndTime(date: string, time: st
   // Assumes that the date & time are given in GMT time zone
   let hours = time
   if (time.length === 1) {
-    hours = '0' + time + '00'
+    hours = `0${time}00`
   } else if (time.length === 2) {
-    hours = time + '00'
+    hours = `${time}00`
   } else if (time.length === 3) {
-    hours = '0' + time
+    hours = `0${time}`
   }
   return startOfHour(parse(date + hours + 'Z', 'yyyyMMddHHmmX', new Date()))
 }

@@ -83,7 +83,7 @@ export function init(): Promise<void> {
         } else {
           return fsExtraP.writeFileAsync(latestGribFile + '.tmp', gribFileBuffer)
             .then(() => fsExtraP.renameAsync(latestGribFile + '.tmp', latestGribFile))
-            .then(() => logger.info('Successfully downloaded new grib file! (' + gribFileBuffer.length + ' bytes)'))
+            .then(() => logger.info(`Successfully downloaded new grib file! (${gribFileBuffer.length} bytes)`))
             .then(() => ForecastCache.refreshFrom(latestGribFile))
         }
       })
