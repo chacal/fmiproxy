@@ -16,8 +16,8 @@ let observationStations: ObservationStation[] = []
 let marineObservationStations: ObservationStation[] = []
 
 export function init(): Promise<void> {
-  logger.info("Updating observation station cache..")
-  const lastFullHour = format(startOfHour(convertToTimeZone(new Date(), { timeZone: 'UTC'})), "yyyy-MM-dd'T'HH:mm:ss'Z'")
+  logger.info('Updating observation station cache..')
+  const lastFullHour = format(startOfHour(convertToTimeZone(new Date(), { timeZone: 'UTC' })), 'yyyy-MM-dd\'T\'HH:mm:ss\'Z\'')
   const observationsUrl = 'http://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
 
   return fetch(observationsUrl)
@@ -29,7 +29,7 @@ export function init(): Promise<void> {
         gml: 'http://www.opengis.net/gml/3.2',
         xlink: 'http://www.w3.org/1999/xlink'
       })
-      const locationNodes = select("//target:Location", doc)
+      const locationNodes = select('//target:Location', doc)
       return locationNodes.map(createObservationStation)
 
       function createObservationStation(locationNode: Node): ObservationStation {
@@ -37,8 +37,8 @@ export function init(): Promise<void> {
         const geoid = select('./gml:name[@codeSpace="http://xml.fmi.fi/namespace/locationcode/geoid"]/text()', locationNode).toString()
         const poinRef = select('./target:representativePoint/@xlink:href', locationNode, true) as Attr
         const position = select('//gml:Point[@gml:id="' + poinRef.value.substr(1) + '"]/gml:pos/text()', doc, true).toString()
-        const {latitude, longitude} = Utils.coordinatesFromPositionString(position)
-        return {geoid, name, latitude, longitude}
+        const { latitude, longitude } = Utils.coordinatesFromPositionString(position)
+        return { geoid, name, latitude, longitude }
       }
     })
     .then(stations => {
@@ -50,7 +50,7 @@ export function init(): Promise<void> {
 
 export function getNearestStation(latitude: number, longitude: number, marineStationsOnly: boolean = false): NearestObservationStation {
   const haystack = marineStationsOnly ? marineObservationStations : observationStations
-  const nearest = findNearest({latitude, longitude}, haystack) as ObservationStation
-  const distanceMeters = getDistance({latitude, longitude}, nearest)
+  const nearest = findNearest({ latitude, longitude }, haystack) as ObservationStation
+  const distanceMeters = getDistance({ latitude, longitude }, nearest)
   return R.merge({ distanceMeters }, nearest)
 }

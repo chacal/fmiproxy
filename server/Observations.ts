@@ -30,12 +30,12 @@ export default function init() {
 
     const dataLines = trimmedLines(values)
     const metadataLines = trimmedLines(metadata)
-    const observationLines = R.zipWith((a,b) => a + ' ' + b, dataLines, metadataLines)
+    const observationLines = R.zipWith((a, b) => a + ' ' + b, dataLines, metadataLines)
 
     const observations = observationLines.map(parseObservationItem)
 
     return {
-      station: R.mergeRight(stationInfo, {geoid}),
+      station: R.mergeRight(stationInfo, { geoid }),
       observations
     }
 
@@ -66,6 +66,8 @@ export default function init() {
       return R.merge({ name }, Utils.coordinatesFromPositionString(position))
     }
 
-    function trimmedLines(input: string): string[] { return input.trim().split(/\n/).map(line => line.trim()) }
+    function trimmedLines(input: string): string[] {
+      return input.trim().split(/\n/).map(line => line.trim())
+    }
   }
 }

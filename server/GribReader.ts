@@ -17,7 +17,10 @@ export function getGribBounds(gribFile: string): Promise<Bounds> {
     .then(output => output.split('\n')[0])
     .then(line => {
       const coords = line.trim().split(/ /).map(parseFloat)
-      return {swCorner: {latitude: coords[0], longitude: coords[1]}, neCorner: {latitude: coords[2], longitude: coords[3]}}
+      return {
+        swCorner: { latitude: coords[0], longitude: coords[1] },
+        neCorner: { latitude: coords[2], longitude: coords[3] }
+      }
     })
 }
 
@@ -90,5 +93,7 @@ function parseForecastTimeAndItems(gribGetOutput: string, latitude: number, long
     }
   }
 
-  function getNonEmptySplittedStrings(s: string, splitter: RegExp): string[] { return s.split(splitter).filter(line => line.trim() !== '') }
+  function getNonEmptySplittedStrings(s: string, splitter: RegExp): string[] {
+    return s.split(splitter).filter(line => line.trim() !== '')
+  }
 }

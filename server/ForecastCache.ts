@@ -12,14 +12,16 @@ const LNG_GRID_INCREMENT = 0.5
 let cachedForecast: AreaForecast
 
 
-export function getAreaForecast(): AreaForecast { return cachedForecast }
+export function getAreaForecast(): AreaForecast {
+  return cachedForecast
+}
 
 export function getBoundedAreaForecast(bounds: Bounds, startTime: Date = new Date(0)): AreaForecast {
   const corners = [
-    {latitude: bounds.swCorner.latitude, longitude: bounds.swCorner.longitude},
-    {latitude: bounds.neCorner.latitude, longitude: bounds.swCorner.longitude},
-    {latitude: bounds.neCorner.latitude, longitude: bounds.neCorner.longitude},
-    {latitude: bounds.swCorner.latitude, longitude: bounds.neCorner.longitude}
+    { latitude: bounds.swCorner.latitude, longitude: bounds.swCorner.longitude },
+    { latitude: bounds.neCorner.latitude, longitude: bounds.swCorner.longitude },
+    { latitude: bounds.neCorner.latitude, longitude: bounds.neCorner.longitude },
+    { latitude: bounds.swCorner.latitude, longitude: bounds.neCorner.longitude }
   ]
 
   return L.remove(['pointForecasts',
@@ -32,7 +34,7 @@ export function getBoundedAreaForecast(bounds: Bounds, startTime: Date = new Dat
 
 
   function forecastInBounds(forecast: PointForecast, corners: Coords[]): boolean {
-    return isPointInPolygon({latitude: forecast.latitude, longitude: forecast.longitude}, corners)
+    return isPointInPolygon({ latitude: forecast.latitude, longitude: forecast.longitude }, corners)
   }
 }
 
@@ -43,8 +45,12 @@ export function refreshFrom(gribFile: string): Promise<void> {
     .then(timestamp => GribReader.getGribBounds(gribFile)
       .then(bounds => createForecastLocations(bounds, LAT_GRID_INCREMENT, LNG_GRID_INCREMENT))
       .then(forecastLocations => getPointForecastsForLocations(forecastLocations, gribFile))
-      .then(pointForecasts => { cachedForecast = { publishTime: timestamp, pointForecasts } })
-      .then(() => { logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecast.pointForecasts.length + ' points.')})
+      .then(pointForecasts => {
+        cachedForecast = { publishTime: timestamp, pointForecasts }
+      })
+      .then(() => {
+        logger.info('Forecast cache refreshed in ' + (new Date().getTime() - startTime.getTime()) + 'ms. Contains ' + cachedForecast.pointForecasts.length + ' points.')
+      })
     )
 
   async function getPointForecastsForLocations(locations: Coords[], gribFile: string): Promise<PointForecast[]> {
@@ -67,7 +73,7 @@ export function refreshFrom(gribFile: string): Promise<void> {
     const latitudes = Utils.rangeStep(bounds.swCorner.latitude, bounds.neCorner.latitude, latIncrement).map(roundTo1Decimal)
     const longitudes = Utils.rangeStep(bounds.swCorner.longitude, bounds.neCorner.longitude, lngIncrement).map(roundTo1Decimal)
 
-    return R.flatten(latitudes.map(latitude => longitudes.map(longitude => ({latitude, longitude}))))
+    return R.flatten(latitudes.map(latitude => longitudes.map(longitude => ({ latitude, longitude }))))
   }
 }
 

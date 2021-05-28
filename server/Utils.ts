@@ -12,15 +12,15 @@ import { NextFunction, Request, Response } from 'express'
 export function grib_get(params: string[]): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const grib_get = child_process.spawn('grib_get', params)
-    let output = ""
-    let errorOutput = ""
+    let output = ''
+    let errorOutput = ''
 
     grib_get.on('error', err => reject(err))
     grib_get.on('close', code => {
-      if(code === 0) {
+      if (code === 0) {
         resolve(output)
       } else {
-        reject({message: 'grib_get exited with error ' + code + ':\n' + errorOutput})
+        reject({ message: 'grib_get exited with error ' + code + ':\n' + errorOutput })
       }
     })
     grib_get.stderr.on('data', chunk => errorOutput += chunk)
@@ -44,11 +44,11 @@ export function parseFullHourlDateFromGribItemDateAndTime(date: string, time: st
   // Works correctly for time inputs: '0', '12', '600', '1600', '1230'
   // Assumes that the date & time are given in GMT time zone
   let hours = time
-  if(time.length === 1) {
+  if (time.length === 1) {
     hours = '0' + time + '00'
-  } else if(time.length === 2) {
+  } else if (time.length === 2) {
     hours = time + '00'
-  } else if(time.length === 3) {
+  } else if (time.length === 3) {
     hours = '0' + time
   }
   return startOfHour(parse(date + hours + 'Z', 'yyyyMMddHHmmX', new Date()))

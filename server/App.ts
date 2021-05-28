@@ -23,15 +23,15 @@ app.set('port', (process.env.PORT || 8000))
 app.use(cors())
 app.use(compression())
 
-logger.info("Starting fmiproxy..")
+logger.info('Starting fmiproxy..')
 
 Promise.all([ObservationStations.init(), GribDownloader.init()])
   .then(startServer)
 
 function startServer(): void {
-  logger.info("Starting HTTP server..")
+  logger.info('Starting HTTP server..')
 
-  app.get(MOUNT_PREFIX + "/nearest-station",
+  app.get(MOUNT_PREFIX + '/nearest-station',
     checkLatLonParams(),
     (req, res) => {
       const lat = parseFloat(req.query.lat as string)
@@ -39,18 +39,21 @@ function startServer(): void {
       res.json(ObservationStations.getNearestStation(lat, lon, req.query.marineOnly === 'true'))
     })
 
-  app.get(MOUNT_PREFIX + "/hirlam-forecast", (req, res, next) => {
-    if(req.query.bounds && (req.query.lat || req.query.lon)) {
-      res.status(400).json({message: 'Use either bounds or lat & lon, not both!'})
-    } else if(req.query.bounds) {
+  app.get(MOUNT_PREFIX + '/hirlam-forecast', (req, res, next) => {
+    if (req.query.bounds && (req.query.lat || req.query.lon)) {
+      res.status(400).json({ message: 'Use either bounds or lat & lon, not both!' })
+    } else if (req.query.bounds) {
       const startTime = new Date(req.query.startTime as string)
       try {
         const coords = (req.query.bounds as string).trim().split(',').map(parseFloat)
-        res.json(ForecastCache.getBoundedAreaForecast({ swCorner: { latitude: coords[0], longitude: coords[1] }, neCorner: { latitude: coords[2], longitude: coords[3] } }, startTime))
+        res.json(ForecastCache.getBoundedAreaForecast({
+          swCorner: { latitude: coords[0], longitude: coords[1] },
+          neCorner: { latitude: coords[2], longitude: coords[3] }
+        }, startTime))
       } catch (e) {
         next(e)
       }
-    } else if(req.query.lat && req.query.lon) {
+    } else if (req.query.lat && req.query.lon) {
       const lat = parseFloat(req.query.lat as string)
       const lon = parseFloat(req.query.lon as string)
       const startTime = new Date(req.query.startTime as string)
@@ -62,23 +65,23 @@ function startServer(): void {
     }
   })
 
-  app.get(MOUNT_PREFIX + "/observations", (req, res, next) => {
-    if(req.query.geoid && req.query.place) {
-      res.status(400).json({message: 'Use either geiod or place, not both!'})
-    } else if(req.query.geoid) {
+  app.get(MOUNT_PREFIX + '/observations', (req, res, next) => {
+    if (req.query.geoid && req.query.place) {
+      res.status(400).json({ message: 'Use either geiod or place, not both!' })
+    } else if (req.query.geoid) {
       observations.getStationObservationForGeoid(req.query.geoid as string)
         .then(observation => respondWithObservation(req, res, observation))
         .catch(next)
-    } else if(req.query.place) {
+    } else if (req.query.place) {
       observations.getStationObservationForPlace(req.query.place as string)
         .then(observation => respondWithObservation(req, res, observation))
         .catch(next)
     } else {
-      res.status(400).json({message: 'Either geiod or place must be given!'})
+      res.status(400).json({ message: 'Either geiod or place must be given!' })
     }
   })
 
-  app.get(MOUNT_PREFIX + "/nearest-observations", checkLatLonParams(), (req, res) => {
+  app.get(MOUNT_PREFIX + '/nearest-observations', checkLatLonParams(), (req, res) => {
     const lat = parseFloat(req.query.lat as string)
     const lon = parseFloat(req.query.lon as string)
     const nearestStation = ObservationStations.getNearestStation(lat, lon, req.query.marineOnly === 'true')
@@ -86,17 +89,17 @@ function startServer(): void {
       .then(observation => respondWithObservation(req, res, observation))
   })
 
-  app.get(MOUNT_PREFIX + "/city-forecast", (req, res, next) => {
-    if(req.query.city === undefined) {
-      res.status(400).json({message: 'city parameter must be given!'})
+  app.get(MOUNT_PREFIX + '/city-forecast', (req, res, next) => {
+    if (req.query.city === undefined) {
+      res.status(400).json({ message: 'city parameter must be given!' })
     } else {
       getCityForecast(req.query.city as string)
-        .then(forecast => forecast !== undefined ? res.json(forecast) : res.status(404).json({message: `Forecast for city '${req.query.city}' not found.`}))
+        .then(forecast => forecast !== undefined ? res.json(forecast) : res.status(404).json({ message: `Forecast for city '${req.query.city}' not found.` }))
         .catch(next)
     }
   })
 
-  app.listen(app.get('port'), () => logger.info("FMI proxy is running at localhost:" + app.get('port')))
+  app.listen(app.get('port'), () => logger.info('FMI proxy is running at localhost:' + app.get('port')))
 
   app.use((err, req, res, next) => {
     logger.error(err.mapped ? JSON.stringify(err.mapped()) : err)
@@ -119,7 +122,9 @@ function startServer(): void {
     const sortByTime: (obs: ObservationItem[]) => ObservationItem[] = R.sortBy(R.prop('time'))
 
     res.json(req.query.latest ? onlyLatest(observation) : observation)
-    
-    function onlyLatest(observation: StationObservation): StationObservation { return L.modify('observations', R.pipe(sortByTime, R.last), observation) }
+
+    function onlyLatest(observation: StationObservation): StationObservation {
+      return L.modify('observations', R.pipe(sortByTime, R.last), observation)
+    }
   }
 }

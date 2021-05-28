@@ -15,12 +15,16 @@ const gribDir = __dirname + '/../gribs'
 export const latestGribFile = gribDir + '/latest.grb'
 
 export function init(): Promise<void> {
-  logger.info("Initializing grib downloader.")
+  logger.info('Initializing grib downloader.')
 
   return fsExtraP.mkdirsAsync(gribDir)
     .then(updateGribIfNeeded)
-    .then(gribUpdated => { if(!gribUpdated) ForecastCache.refreshFrom(latestGribFile) })  // No new grib downloaded -> need to refresh cache manually
-    .then(() => { scheduleGribUpdates() })  // Intentionally no 'return' here to launch the grib updates to the background
+    .then(gribUpdated => {
+      if (!gribUpdated) ForecastCache.refreshFrom(latestGribFile)
+    })  // No new grib downloaded -> need to refresh cache manually
+    .then(() => {
+      scheduleGribUpdates()
+    })  // Intentionally no 'return' here to launch the grib updates to the background
 
   function scheduleGribUpdates(): Promise<void> {
     return delay(gribUpdateCheckIntervalMillis)
@@ -33,20 +37,22 @@ export function init(): Promise<void> {
     logger.info('Checking for new grib..')
     return Promise.all([getLatestDownloadedGribTimestamp(), getLatestPublishedGribTimestamp()])
       .then(([downloadedTime, publishedTime]) => {
-      logger.info(`Downloaded grib timestamp: ${downloadedTime} Latest published grib timestamp: ${publishedTime}`)
-      return isAfter(downloadedTime, publishedTime) || isEqual(downloadedTime, publishedTime)
-    })
-    .then(downloadedGribUpToDate => {
-      if(! downloadedGribUpToDate) {
-        return downloadLatestGrib().then(() => true)
-      } else {
-        logger.info("Downloaded HIRLAM grib is already up-to-date.")
-        return false
-      }
-    })
+        logger.info(`Downloaded grib timestamp: ${downloadedTime} Latest published grib timestamp: ${publishedTime}`)
+        return isAfter(downloadedTime, publishedTime) || isEqual(downloadedTime, publishedTime)
+      })
+      .then(downloadedGribUpToDate => {
+        if (!downloadedGribUpToDate) {
+          return downloadLatestGrib().then(() => true)
+        } else {
+          logger.info('Downloaded HIRLAM grib is already up-to-date.')
+          return false
+        }
+      })
   }
 
-  function getLatestDownloadedGribTimestamp(): Promise<Date> { return GribReader.getGribTimestamp(latestGribFile) }
+  function getLatestDownloadedGribTimestamp(): Promise<Date> {
+    return GribReader.getGribTimestamp(latestGribFile)
+  }
 
   function getLatestPublishedGribTimestamp(): Promise<Date> {
     const gribMetadataUrl = 'http://opendata.fmi.fi/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
@@ -67,12 +73,12 @@ export function init(): Promise<void> {
 
   function downloadLatestGrib(): Promise<void> {
     const gribUrl = 'http://opendata.fmi.fi/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
-    logger.info("Downloading latest HIRLAM grib..")
+    logger.info('Downloading latest HIRLAM grib..')
     return fetch(gribUrl)
       .then(res => res.buffer())
       .then(gribFileBuffer => {
-        if(gribFileBuffer.length === 0) {
-          console.warn("Got empty response when downloading grib. Retrying..")
+        if (gribFileBuffer.length === 0) {
+          console.warn('Got empty response when downloading grib. Retrying..')
           return delay(5000).then(downloadLatestGrib)
         } else {
           return fsExtraP.writeFileAsync(latestGribFile + '.tmp', gribFileBuffer)
