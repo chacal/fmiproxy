@@ -14,6 +14,7 @@ import { validateRequest } from './Utils'
 import cors = require('cors')
 import compression = require('compression')
 import L = require('partial.lenses')
+import { isAfter, isEqual } from 'date-fns'
 
 const MOUNT_PREFIX = process.env.MOUNT_PREFIX || ''
 const observations = Observations()
@@ -121,10 +122,22 @@ function startServer(): void {
   function respondWithObservation(req, res, observation: StationObservation) {
     const sortByTime: (obs: ObservationItem[]) => ObservationItem[] = R.sortBy(R.prop('time'))
 
-    res.json(req.query.latest ? onlyLatest(observation) : observation)
+    if (req.query.latest) {
+      res.json(onlyLatest(observation))
+    } else if (req.query.since) {
+      const since = new Date(req.query.since)
+      res.json(onlySince(observation, since))
+    } else {
+      res.json(observation)
+    }
 
     function onlyLatest(observation: StationObservation): StationObservation {
       return L.modify('observations', R.pipe(sortByTime, R.last), observation)
+    }
+
+    function onlySince(obsevation: StationObservation, since: Date): StationObservation {
+      const isEqualOrAfter = (o: ObservationItem) => isAfter(o.time, since) || isEqual(o.time, since)
+      return L.modify('observations', R.pipe(sortByTime, R.filter(isEqualOrAfter)), observation)
     }
   }
 }
