@@ -78,7 +78,7 @@ export function init(): Promise<void> {
       .then(res => res.buffer())
       .then(gribFileBuffer => {
         if (gribFileBuffer.length === 0) {
-          console.warn('Got empty response when downloading grib. Retrying..')
+          logger.warn('Got empty response when downloading grib. Retrying..')
           return delay(5000).then(downloadLatestGrib)
         } else {
           return fsExtraP.writeFileAsync(latestGribFile + '.tmp', gribFileBuffer)
