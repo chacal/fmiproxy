@@ -44,7 +44,7 @@ export function init(): Promise<void> {
         if (!downloadedGribUpToDate) {
           return downloadLatestGrib().then(() => true)
         } else {
-          logger.info('Downloaded HIRLAM grib is already up-to-date.')
+          logger.info('Downloaded HARMONIE grib is already up-to-date.')
           return false
         }
       })
@@ -55,7 +55,7 @@ export function init(): Promise<void> {
   }
 
   function getLatestPublishedGribTimestamp(): Promise<Date> {
-    const gribMetadataUrl = 'http://opendata.fmi.fi/wfs?request=GetFeature&storedquery_id=fmi::forecast::hirlam::surface::finland::grid'
+    const gribMetadataUrl = 'http://opendata.fmi.fi/wfs?request=GetFeature&storedquery_id=fmi::forecast::harmonie::surface::grid'
     return Utils.getFmiXMLasJson(gribMetadataUrl)
       .then(json => {
         const last = L.choose(arr => L.index(arr.length - 1))
@@ -72,8 +72,8 @@ export function init(): Promise<void> {
   }
 
   function downloadLatestGrib(): Promise<void> {
-    const gribUrl = 'http://opendata.fmi.fi/download?param=windvms,windums,pressure,precipitation1h&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
-    logger.info('Downloading latest HIRLAM grib..')
+    const gribUrl = 'http://opendata.fmi.fi/download?producer=harmonie_scandinavia_surface&param=WindVMS,WindUMS,Pressure,PrecipitationAmount&format=grib2&bbox=19.4,59.2,27,60.6&projection=EPSG:4326'
+    logger.info('Downloading latest HARMONIE grib..')
     return fetch(gribUrl)
       .then(res => res.buffer())
       .then(gribFileBuffer => {

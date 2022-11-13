@@ -18,7 +18,7 @@ let marineObservationStations: ObservationStation[] = []
 export function init(): Promise<void> {
   logger.info('Updating observation station cache..')
   const lastFullHour = format(startOfHour(convertToTimeZone(new Date(), { timeZone: 'UTC' })), 'yyyy-MM-dd\'T\'HH:mm:ss\'Z\'')
-  const observationsUrl = 'http://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=fmi::forecast::hirlam::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
+  const observationsUrl = 'http://opendata.fmi.fi/wfs?request=getFeature&storedquery_id=ecmwf::forecast::surface::obsstations::multipointcoverage&parameters=temperature&starttime=' + lastFullHour + '&endtime=' + lastFullHour
 
   return fetch(observationsUrl)
     .then(res => res.text())
